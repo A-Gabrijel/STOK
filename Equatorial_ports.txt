@@ -1,0 +1,193 @@
+# This is the port manipulation file, you may change any value but do NOT change the layout of the file. If you do, JET might not generate properly.
+# Under here are the common values to all ports
+# Number of ports
+8
+
+# Colour
+(0,0,1,0.9)
+
+# Port hole shape (rectangle_z means longer axis on Z, Y means on Y axis) uncomment if shape is diferent than square
+"rectangle_z"
+
+# Longer rect size
+960.0
+
+####################################################################
+# And under here is everything else
+# Every new port is to be set identically (as in the same format) as the first one
+# 1:
+# Outer port size
+460.0
+
+# Port opening size
+70.0
+
+# Port tilt N-S (positive is north and negative is south (in degrees))
+0.0
+
+# Port tilt W-E (positive is west and negative is east (in degrees))
+0.0
+
+# Port vertical offset
+0.0
+
+# Port horizontal offset
+0.0
+
+# Port name (if left 0, the program will generate a generic name based on the port number)
+"Neutron detector"
+
+# 2: #####################
+# Outer port size
+460.0
+
+# Port opening size
+70.0
+
+# Port tilt N-S (positive is north and negative is south (in degrees))
+0.0
+
+# Port tilt W-E (positive is west and negative is east (in degrees))
+0.0
+
+# Port vertical offset
+0.0
+
+# Port horizontal offset
+0.0
+
+# Port name (if left 0, the program will generate a generic name based on the port number)
+0
+
+# 3: #########################
+# Outer port size
+460.0
+
+# Port opening size
+70.0
+
+# Port tilt N-S (positive is north and negative is south (in degrees))
+0.0
+
+# Port tilt W-E (positive is west and negative is east (in degrees))
+0.0
+
+# Port vertical offset
+0.0
+
+# Port horizontal offset
+0.0
+
+# Port name (if left 0, the program will generate a generic name based on the port number)
+0
+
+# 4: #########################
+# Outer port size
+460.0
+
+# Port opening size
+70.0
+
+# Port tilt N-S (positive is north and negative is south (in degrees))
+0.0
+
+# Port tilt W-E (positive is west and negative is east (in degrees))
+0.0
+
+# Port vertical offset
+0.0
+
+# Port horizontal offset
+0.0
+
+# Port name (if left 0, the program will generate a generic name based on the port number)
+0
+
+# 5: ############################
+# Outer port size
+460.0
+
+# Port opening size
+70
+
+# Port tilt N-S (positive is north and negative is south (in degrees))
+0.0
+
+# Port tilt W-E (positive is west and negative is east (in degrees))
+0.0
+
+# Port vertical offset
+0.0
+
+# Port horizontal offset
+0.0
+
+# Port name (if left 0, the program will generate a generic name based on the port number)
+0
+
+# 6: ############################
+# Outer port size
+460.0
+
+# Port opening size
+70.0
+
+# Port tilt N-S (positive is north and negative is south (in degrees))
+0.0
+
+# Port tilt W-E (positive is west and negative is east (in degrees))
+0.0
+
+# Port vertical offset
+0.0
+
+# Port horizontal offset
+0.0
+
+# Port name (if left 0, the program will generate a generic name based on the port number)
+0
+
+# 7: ##########################
+# Outer port size
+# Outer port size
+460.0
+
+# Port opening size
+70.0
+
+# Port tilt N-S (positive is north and negative is south (in degrees))
+0.0
+
+# Port tilt W-E (positive is west and negative is east (in degrees))
+0.0
+
+# Port vertical offset
+0.0
+
+# Port horizontal offset
+0.0
+
+# Port name (if left 0, the program will generate a generic name based on the port number)
+0
+
+# 8: ##########################
+# Outer port size
+460.0
+
+# Port opening size
+70.0
+
+# Port tilt N-S (positive is north and negative is south (in degrees))
+0.0
+
+# Port tilt W-E (positive is west and negative is east (in degrees))
+0.0
+
+# Port vertical offset
+0.0
+
+# Port horizontal offset
+0.0
+
+# Port name (if left 0, the program will generate a generic name based on the port number)
+0

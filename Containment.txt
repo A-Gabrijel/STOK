@@ -1,0 +1,168 @@
+# This is the containment manipulation file, you may change the values but do NOT change the layout of the file
+# The values under this line of text are common values to all containment layers
+# Outer containment radius
+4945.0
+
+# Containment Height
+5570.0
+
+# Containment cut (how much of the containment do you want to draw)
+360
+
+# Nr. of containment layers
+8
+
+####################################################################
+# And under here is everything else
+# Every new containment layer is to be set identically (as in the same format) as the first one
+# 1:
+# Colour
+(0,1,0,1)
+
+# Upper wall thickness
+150.0
+
+# Lower wall thickness
+150.0
+
+# Outer wall thickness
+150.0
+
+# Inner wall thickness
+150.0
+
+# Name (if value is 0 a generic name will be given. Names are to be given as follows: "layer name" <--Quotes are necessary)
+"Iron cask"
+
+# 2:
+# Colour
+(0,0,1,1)
+
+# Upper wall thickness
+150.0
+
+# Lower wall thickness
+150.0
+
+# Outer wall thickness
+150.0
+
+# Inner wall thickness
+150.0
+
+# Name (if value is 0 a generic name will be given. Names are to be given as follows: "layer name" <--Quotes are necessary)
+0
+
+# 3:
+# Colour
+(0,1,1,1)
+
+# Upper wall thickness
+200.0
+
+# Lower wall thickness
+200.0
+
+# Outer wall thickness
+200.0
+
+# Inner wall thickness
+200.0
+
+# Name (if value is 0 a generic name will be given. Names are to be given as follows: "layer name" <--Quotes are necessary)
+0
+
+# 4:
+# Colour
+(0.5,0.5,1,1)
+
+# Upper wall thickness
+25.0
+
+# Lower wall thickness
+25.0
+
+# Outer wall thickness
+25.0
+
+# Inner wall thickness
+25.0
+
+# Name (if value is 0 a generic name will be given. Names are to be given as follows: "layer name" <--Quotes are necessary)
+0
+
+# 5:
+# Colour
+(0.5,0.5,0,1)
+
+# Upper wall thickness
+50.0
+
+# Lower wall thickness
+50.0
+
+# Outer wall thickness
+50.0
+
+# Inner wall thickness
+50.0
+
+# Name (if value is 0 a generic name will be given. Names are to be given as follows: "layer name" <--Quotes are necessary)
+0
+
+# 6:
+# Colour
+(0.2,0.5,0.8,1)
+
+# Upper wall thickness
+140.0
+
+# Lower wall thickness
+140.0
+
+# Outer wall thickness
+140.0
+
+# Inner wall thickness
+140.0
+
+# Name (if value is 0 a generic name will be given. Names are to be given as follows: "layer name" <--Quotes are necessary)
+0
+
+# 7:
+# Colour
+(0.2,0.5,0.8,1)
+
+# Upper wall thickness
+500.0
+
+# Lower wall thickness
+500.0
+
+# Outer wall thickness
+50.0
+
+# Inner wall thickness
+50.0
+
+# Name (if value is 0 a generic name will be given. Names are to be given as follows: "layer name" <--Quotes are necessary)
+0
+
+# 8:
+# Colour
+(0.2,0.5,0.8,1)
+
+# Upper wall thickness
+50.0
+
+# Lower wall thickness
+50.0
+
+# Outer wall thickness
+50.0
+
+# Inner wall thickness
+50.0
+
+# Name (if value is 0 a generic name will be given. Names are to be given as follows: "layer name" <--Quotes are necessary)
+0

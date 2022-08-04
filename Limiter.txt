@@ -1,0 +1,5 @@
+# The gap between the limiter and the port wall
+15
+
+# Thickness of the limiter from the firstwall onwards
+1100.0
