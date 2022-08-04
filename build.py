@@ -1,9 +1,10 @@
 import math as m
+
 import cadquery as cq
 from cadquery import Vector
 
 class filereader:
-    def __init__(self, filename, skip_lines, nr_of_data):
+    def __init__(self, filename: str, skip_lines: int, nr_of_data: int):
         self.filename = filename
         self.skip_lines = skip_lines
         self.nr_of_data = nr_of_data
