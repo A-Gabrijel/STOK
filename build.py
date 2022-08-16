@@ -4,7 +4,7 @@ import cadquery as cq
 from cadquery import Vector
 
 
-class filereader:
+class FileReader:
     """
     Reads the input file, in the future this will be depricated.
     """
@@ -15,26 +15,49 @@ class filereader:
         self.nr_of_data = nr_of_data
 
     def reader(self):
-        with open(self.filename, "r") as file:
+        """
+        Reads a file and checks for numerical values,
+        then returns a list of the numerical values.
+
+        Returns:
+            List[float]: returns a tuple of the numerical values.
+        """
+        with open(self.filename, 'r', encoding='utf8') as file:
             output = []
-            for i, line in enumerate(file):
+            for line in enumerate(file):
                 if ("\n" in line[0]) or ("#" in line[0]) or ("%" in line[0]):
                     pass
+                elif isinstance(line) == int or isinstance(line) == float:
+                    output.append(int(line))
                 else:
-                    output.append(eval(line))
+                    output.append(str(line))
         return output
 
-    def readerplain(self):
-        with open(self.filename, "r") as file:
+    def reader_plain(self):
+        """Just reades the file and returns the lines as a list.
+
+        Returns:
+            List[str]: returns a list of the lines in the file.
+        """
+        with open(self.filename, 'r', encoding='utf8') as file:
             output = []
-            for i, line in enumerate(file):
+            for line in enumerate(file):
                 if ("\n" in line[0]) or ("#" in line[0]) or ("%" in line[0]):
                     pass
+                elif isinstance(line) == int or isinstance(line) == float:
+                    output.append(int(line))
                 else:
-                    output.append(line)
+                    output.append(str(line))
         return output
 
     def parsing(self):
+        """
+        Parses the file and returns a list of the numerical values.
+        Slightly formatted.
+
+        Returns:
+            List[List[str]]: returns a list of the numerical values.
+        """
         output = []
         count = self.nr_of_data
         for i in range(self.skip_lines, len(self.reader())):
@@ -45,49 +68,42 @@ class filereader:
                 count += 1
         return output
 
-    def iterator(**kwargs):
-        directory = kwargs["directory"]
-        files = []
-        for filename in os.listdir(directory):
-            f = os.path.join(directory, filename)
-            # checking if it is a file
-            if os.path.isfile(f):
-                files.append(f)
 
-        return files
+class Rectok:
+    """
+    Creates the class containing all constructin components
+    """
 
-
-class rectok:
     def __init__(self):
         # --- Containment ---
-        containment = filereader("Containment.txt", 4, 5).reader()
+        containment = FileReader("Containment.txt", 4, 5).reader()
         self.outer_radius = containment[0]
         self.containment_height = containment[1]
         self.containment_cut = containment[2]
         self.nr_layers = containment[3]
-        self.containment_rest = filereader("Containment.txt", 4, 5).parsing()
+        self.containment_rest = FileReader("Containment.txt", 4, 5).parsing()
 
         # --- Solenoid ---
-        solenoid = filereader("Solenoid.txt", 0, 0).reader()
+        solenoid = FileReader("Solenoid.txt", 0, 0).reader()
         self.solenoid_radius = solenoid[1]
         self.solenoid_height = solenoid[2]
 
         # --- Ports ---
-        eq_port = filereader("Equatorial_ports.txt", 4, 6).reader()
+        eq_port = FileReader("Equatorial_ports.txt", 4, 6).reader()
         self.nr_ports = eq_port[0]
         self.shape = eq_port[2]
         self.longer_rect = eq_port[3]
-        self.eq_ports_rest = filereader("Equatorial_ports.txt", 4, 6).parsing()
+        self.eq_ports_rest = FileReader("Equatorial_ports.txt", 4, 6).parsing()
 
         # --- Limbs ---
-        limbs = filereader("Limbs.txt", 5, 4).reader()
+        limbs = FileReader("Limbs.txt", 5, 4).reader()
         self.nr_limbs = limbs[0]
         self.limb_radius = self.outer_radius + limbs[2]
         self.limb_offset = 360/(self.nr_ports * 2) if limbs[4] == "yes" else 0
-        self.limbs_rest = filereader("Limbs.txt", 5, 4).parsing()
+        self.limbs_rest = FileReader("Limbs.txt", 5, 4).parsing()
 
         # --- Limiter ---
-        limiter = filereader("Limiter.txt", 0, 0).reader()
+        limiter = FileReader("Limiter.txt", 0, 0).reader()
         self.firstwall_thickness = self.containment_rest[self.nr_layers-1][3]
         self.limiter_gap = limiter[0]
         self.limiter_thickness = limiter[1]
@@ -98,157 +114,201 @@ class rectok:
         # --- Limiter spheres ---
         self.sphere_radius = limbs[3]
 
-        self.SumOuterThickness_Full = 0
-        for a in range(self.nr_layers):
-            self.SumOuterThickness_Full += self.containment_rest[a][3]
+        self.sum_outer_thickness_full = 0
+        for apples in range(self.nr_layers):
+            self.sum_outer_thickness_full += self.containment_rest[apples][3]
 
-        self.SumUpperThickness_Full = 0
-        for b in range(self.nr_layers):
-            self.SumUpperThickness_Full += self.containment_rest[b][1]
+        self.sum_upper_thickness_full = 0
+        for banannas in range(self.nr_layers):
+            self.sum_upper_thickness_full += self.containment_rest[banannas][1]
 
-        self.SumLowerThickness_Full = 0
-        for c in range(self.nr_layers):
-            self.SumLowerThickness_Full += self.containment_rest[c][2]
+        self.sum_lower_thickness_full = 0
+        for cherries in range(self.nr_layers):
+            self.sum_lower_thickness_full += self.containment_rest[cherries][2]
 
-        self.SumInnerThickness_Full = 0
-        for d in range(self.nr_layers):
-            self.SumInnerThickness_Full += self.containment_rest[d][4]
+        self.sum_inner_thickness_full = 0
+        for dates in range(self.nr_layers):
+            self.sum_inner_thickness_full += self.containment_rest[dates][4]
 
-    def CentralSolenoid(self):
+    def central_solenoid(self):
+        """
+        Creates the central solenoid
+
+        Returns:
+            cadquery.cq.Workplane object: The central solenoid
+        """
         solenoid = cq.Workplane("YX").\
             circle(self.solenoid_radius).\
             extrude(self.solenoid_height).\
             translate(Vector(0, 0, self.solenoid_height/2))
         return solenoid
 
-    def Openings(self, **kwargs):
+    def openings(self, index: int):
+        """
+        Creates the boxes to cut out the openings in the containment.
 
-        angle = (2*m.pi)/self.nr_ports
-        degAngle = (angle*kwargs["index"]*180)/m.pi
+        Args:
+            index (int): the port to be created, 0 is the port at
+            angle 0, 1 is the port at angle 1, etc.
 
-        x = (self.outer_radius -
-             self.containment_rest[0][3]/2)*m.cos((angle)*kwargs["index"])
-        y = (self.outer_radius -
-             self.containment_rest[0][3]/2)*m.sin((angle)*kwargs["index"])
+        Raises:
+            Exception: when there is no such port shape
 
-        port_depth = self.SumOuterThickness_Full * \
-            (1/m.cos(m.radians(self.eq_ports_rest[kwargs["index"]][2])) + 1/m.cos(
-                m.radians(self.eq_ports_rest[kwargs["index"]][2])))
+        Returns:
+            cadquery.cq.Workplane: the openings
+        """
+        angle = (2 * m.pi) / self.nr_ports
+        deg_angle = (angle * index * 180) / m.pi
+
+        x_poz = (self.outer_radius -
+                 self.containment_rest[0][3]/2) * m.cos((angle) * index)
+        y_poz = (self.outer_radius -
+                 self.containment_rest[0][3]/2) * m.sin((angle) * index)
+
+        port_depth = self.sum_outer_thickness_full * \
+            (1/m.cos(m.radians(self.eq_ports_rest[index][2])) +
+             1/m.cos(m.radians(self.eq_ports_rest[index][2])))
 
         # Constructing objects to be used for later addition and subtraction
         if self.shape == "square":
             port_nohole = cq.Workplane("XY").\
-                box(port_depth*4, self.eq_ports_rest[kwargs["index"]]
-                    [0], self.eq_ports_rest[kwargs["index"]][0])
+                box(port_depth * 4, self.eq_ports_rest[index]
+                    [0], self.eq_ports_rest[index][0])
         elif self.shape == "rectangle_z":
             port_nohole = cq.Workplane("XY").\
-                box(port_depth*4,
-                    self.eq_ports_rest[kwargs["index"]][0], self.longer_rect)
+                box(port_depth * 4,
+                    self.eq_ports_rest[index][0], self.longer_rect)
         elif self.shape == "rectangle_y":
             port_nohole = cq.Workplane("XY").\
-                box(port_depth*4, self.longer_rect,
-                    self.eq_ports_rest[kwargs["index"]][0])
+                box(port_depth * 4, self.longer_rect,
+                    self.eq_ports_rest[index][0])
         else:
             raise Exception("no such object yet")
 
-        port_endcutDOWN = cq.Workplane("XY").\
+        port_end_cut_down = cq.Workplane("XY").\
             circle(self.outer_radius).\
             extrude(100).\
-            translate(Vector(0, 0, -self.containment_height /
-                      2 + self.SumLowerThickness_Full - 100))
+            translate(Vector(0, 0, -self.containment_height / 2 +
+                             self.sum_lower_thickness_full - 100))
 
-        port_endcutUP = cq.Workplane("XY").\
+        port_end_cut_up = cq.Workplane("XY").\
             circle(self.outer_radius).\
             extrude(100).\
-            translate(Vector(0, 0, +self.containment_height /
-                      2 - self.SumUpperThickness_Full))
+            translate(Vector(0, 0, self.containment_height / 2 -
+                             self.sum_upper_thickness_full))
 
         port_cut = cq.Workplane("XY").\
-            circle(self.outer_radius-self.SumOuterThickness_Full).\
-            extrude(self.eq_ports_rest[kwargs["index"]][0]*100).\
-            translate(
-                Vector(0, 0, -(self.eq_ports_rest[kwargs["index"]][0])*100/2))
+            circle(self.outer_radius - self.sum_outer_thickness_full).\
+            extrude(self.eq_ports_rest[index][0]*100).\
+            translate(Vector(0, 0, -(self.eq_ports_rest[index][0]) * 100 / 2))
 
-        allignXYport = self.SumOuterThickness_Full / \
-            m.cos(m.radians(self.eq_ports_rest[kwargs["index"]][3])) * m.sin(
-                m.radians(self.eq_ports_rest[kwargs["index"]][3]))
+        allign_xy_port = self.sum_outer_thickness_full / \
+            m.cos(m.radians(self.eq_ports_rest[index][3])) * m.sin(
+                m.radians(self.eq_ports_rest[index][3]))
 
         # Here we cut the hole into the port
-        port = port_nohole.translate(Vector(self.SumOuterThickness_Full, 0, 0))
+        port = port_nohole.translate(
+            Vector(self.sum_outer_thickness_full, 0, 0))
 
         # Here we apply the rotations to the port
-        port = port.rotate((0, -self.eq_ports_rest[kwargs["index"]][0], 0), (0, self.eq_ports_rest[kwargs["index"]][0], 0), -self.eq_ports_rest[kwargs["index"]][2]).\
-            rotate((0, 0, -self.eq_ports_rest[kwargs["index"]][0]), (0, 0,
-                   self.eq_ports_rest[kwargs["index"]][0]), self.eq_ports_rest[kwargs["index"]][3])
+        port = port.rotate((0, -self.eq_ports_rest[index][0], 0),
+                           (0, self.eq_ports_rest[index][0], 0),
+                           -self.eq_ports_rest[index][2]).\
+                    rotate((0, 0, -self.eq_ports_rest[index][0]),
+                           (0, 0, self.eq_ports_rest[index][0]),
+                           self.eq_ports_rest[index][3])
 
-        # Here we translate the port to the proper radius then cut away a containment shaped circular cylinder so that in the final construction the ports will sit flush with the inner containment wall
-        if self.eq_ports_rest[kwargs["index"]][2] < 0:
-            port = port.translate(Vector(-self.outer_radius, -allignXYport-self.eq_ports_rest[kwargs["index"]][5], self.eq_ports_rest[kwargs["index"]][4])).\
-                cut(port_cut).cut(port_endcutUP).\
-                translate(Vector(
-                    self.outer_radius-self.containment_rest[0][3]/2, 0, -self.eq_ports_rest[kwargs["index"]][4]))
+        # Here we translate the port to the proper radius then
+        # cut away a containment shaped circular cylinder so that
+        # in the final construction the ports will sit flush with
+        # the inner containment wall
+
+        if self.eq_ports_rest[index][2] < 0:
+            port = port.translate(Vector(-self.outer_radius,
+                                         -allign_xy_port - self.eq_ports_rest[index][5],
+                                         self.eq_ports_rest[index][4])).\
+                        cut(port_cut).\
+                        cut(port_end_cut_up).\
+                        translate(Vector(self.outer_radius - self.containment_rest[0][3] / 2,
+                                         0,
+                                         -self.eq_ports_rest[index][4]))
         else:
-            port = port.translate(Vector(-self.outer_radius, -allignXYport-self.eq_ports_rest[kwargs["index"]][5], self.eq_ports_rest[kwargs["index"]][4])).\
-                cut(port_cut).cut(port_endcutDOWN).\
-                translate(Vector(
-                    self.outer_radius-self.containment_rest[0][3]/2, 0, -self.eq_ports_rest[kwargs["index"]][4]))
+            port = port.translate(Vector(-self.outer_radius,
+                                         -allign_xy_port - self.eq_ports_rest[index][5],
+                                         self.eq_ports_rest[index][4])).\
+                        cut(port_cut).\
+                        cut(port_end_cut_down).\
+                        translate(Vector(self.outer_radius - self.containment_rest[0][3] / 2,
+                                         0,
+                                         -self.eq_ports_rest[index][4]))
 
         # Inner wall alignemnt
-        allignZ = self.SumOuterThickness_Full / \
-            m.cos(m.radians(self.eq_ports_rest[kwargs["index"]][2])) * m.sin(
-                m.radians(self.eq_ports_rest[kwargs["index"]][2]))
+        allign_z = self.sum_outer_thickness_full / \
+            m.cos(m.radians(self.eq_ports_rest[index][2])) * \
+            m.sin(m.radians(self.eq_ports_rest[index][2]))
 
-        # Finally the persistent rotation of the final geometry is applied (so all the ports face center)
-        port = port.rotate((0, 0, self.eq_ports_rest[kwargs["index"]][0]), (0, 0, -self.eq_ports_rest[kwargs["index"]][0]), -180-degAngle).\
-            translate(
-                Vector(x, y, self.eq_ports_rest[kwargs["index"]][4] - allignZ))
+        # Finally the persistent rotation of the final
+        # geometry is applied (so all the ports face center)
+        port = port.rotate((0, 0, self.eq_ports_rest[index][0]),
+                           (0, 0, -self.eq_ports_rest[index][0]),
+                           -180 - deg_angle).\
+                    translate(Vector(x_poz,
+                                     y_poz,
+                                     self.eq_ports_rest[index][4] - allign_z))
 
         return port
 
-    def ContConstrFunct(self, **kwargs):
+    def containment_constructor(self, index: int):
+        """A function that constructs cylindrical containment layers.
+
+        Args:
+            index (int): the layer to be created, 0 is the innermost,
+            1 is the next layer out, etc.
+
+        Returns:
+            cadquery.cq.Workplane: the containment layer
+        """
 
         # Thickness counters for easier function definition
-        SumUpperThickness = 0
-        SumLowerThickness = 0
-        SumOuterThickness = 0
-        SumInnerThickness = 0
+        sum_upper_thickness = 0
+        sum_lower_thickness = 0
+        sum_outer_thickness = 0
+        sum_inner_thickness = 0
 
-        if kwargs["index"] > 0:
-            for i in range(kwargs["index"]):
-                SumUpperThickness += self.containment_rest[i][1]
-                SumLowerThickness += self.containment_rest[i][2]
-                SumOuterThickness += self.containment_rest[i][3]
-                SumInnerThickness += self.containment_rest[i][4]
+        if index > 0:
+            for i in range(index):
+                sum_upper_thickness += self.containment_rest[i][1]
+                sum_lower_thickness += self.containment_rest[i][2]
+                sum_outer_thickness += self.containment_rest[i][3]
+                sum_inner_thickness += self.containment_rest[i][4]
 
-        horizontal_displacement = SumOuterThickness + SumInnerThickness
-        vertical_displacement = SumUpperThickness + SumLowerThickness
+        horizontal_displacement = sum_outer_thickness + sum_inner_thickness
+        vertical_displacement = sum_upper_thickness + sum_lower_thickness
 
-        debelinaNot = self.containment_rest[kwargs["index"]][4]
-        debelinaZun = self.containment_rest[kwargs["index"]][3]
-        debelinaGor = self.containment_rest[kwargs["index"]][1]
-        debelinaDol = self.containment_rest[kwargs["index"]][2]
+        debelina_not = self.containment_rest[index][4]
+        debelina_zun = self.containment_rest[index][3]
+        debelina_gor = self.containment_rest[index][1]
+        debelina_dol = self.containment_rest[index][2]
 
         sirina = self.outer_radius - self.solenoid_radius - horizontal_displacement
         visina = self.containment_height - vertical_displacement
 
-        InnerR = self.solenoid_radius + SumInnerThickness
-
-        vertical_alignment = (-SumUpperThickness+SumLowerThickness)/2
+        inner_r = self.solenoid_radius + sum_inner_thickness
 
         pointsouter = [
-            (sirina/2+InnerR+sirina/2, visina/2),
-            (sirina/2+InnerR+sirina/2, -visina/2),
-            (-sirina/2+InnerR+sirina/2, -visina/2),
-            (-sirina/2+InnerR+sirina/2, visina/2),
-            (sirina/2+InnerR+sirina/2, visina/2)
+            (sirina/2 + inner_r + sirina/2, visina/2),
+            (sirina/2 + inner_r + sirina/2, -visina/2),
+            (-sirina/2 + inner_r + sirina/2, -visina/2),
+            (-sirina/2 + inner_r + sirina/2, visina/2),
+            (sirina/2 + inner_r + sirina/2, visina/2)
         ]
 
         pointsinner = [
-            (sirina/2-debelinaZun+InnerR+sirina/2, visina/2-debelinaGor),
-            (sirina/2-debelinaZun+InnerR+sirina/2, -visina/2+debelinaDol),
-            (-sirina/2+debelinaNot+InnerR+sirina/2, -visina/2+debelinaDol),
-            (-sirina/2+debelinaNot+InnerR+sirina/2, visina/2-debelinaGor),
-            (sirina/2-debelinaZun+InnerR+sirina/2, visina/2-debelinaGor)
+            (sirina/2 - debelina_zun + inner_r + sirina/2, visina/2 - debelina_gor),
+            (sirina/2 - debelina_zun + inner_r + sirina/2, -visina/2 + debelina_dol),
+            (-sirina/2 + debelina_not + inner_r + sirina/2, -visina/2 + debelina_dol),
+            (-sirina/2 + debelina_not + inner_r + sirina/2, visina/2 - debelina_gor),
+            (sirina/2 - debelina_zun + inner_r + sirina/2, visina/2 - debelina_gor)
         ]
 
         rezultat = cq.Workplane('XZ').polyline(pointsouter).\
@@ -259,233 +319,334 @@ class rectok:
 
         return rezultat.cut(rezultat2)
 
-    def Port(self, **kwargs):
+    def port(self, index: int):
+        """Creates a port.
 
-        angle = (2*m.pi)/self.nr_ports
-        degAngle = (angle*kwargs["index"]*180)/m.pi
+        Args:
+            index (int): the port to be created, 0 is the one at angle 0,
+            then the next one is at angle index/(nr_of_ports/360), etc.
 
-        x = (self.outer_radius -
-             self.containment_rest[0][3]/2)*m.cos(angle*kwargs["index"])
-        y = (self.outer_radius -
-             self.containment_rest[0][3]/2)*m.sin(angle*kwargs["index"])
+        Returns:
+            cadquery.cq.Workplane: a port.
+        """
 
-        allignZport = self.SumOuterThickness_Full / \
-            m.cos(m.radians(self.eq_ports_rest[kwargs["index"]][2])) * m.sin(
-                m.radians(self.eq_ports_rest[kwargs["index"]][2]))
+        angle = (2 * m.pi) / self.nr_ports
+        deg_angle = (angle * index * 180) / m.pi
 
-        port_depth = self.SumOuterThickness_Full/m.cos(m.radians(self.eq_ports_rest[kwargs["index"]][2]))*2 + self.SumOuterThickness_Full/4 if self.eq_ports_rest[kwargs["index"]
-                                                                                                                                                                  ][2] != 0 else self.SumOuterThickness_Full/m.cos(m.radians(self.eq_ports_rest[kwargs["index"]][3]))*2 + self.SumOuterThickness_Full/4
+        x_poz = (self.outer_radius -
+                 self.containment_rest[0][3]/2) * m.cos(angle * index)
+        y_poz = (self.outer_radius -
+                 self.containment_rest[0][3]/2) * m.sin(angle * index)
+
+        allign_z_port = self.sum_outer_thickness_full / \
+            m.cos(m.radians(self.eq_ports_rest[index][2])) * \
+            m.sin(m.radians(self.eq_ports_rest[index][2]))
+
+        if self.eq_ports_rest[index][2] != 0:
+            port_depth = self.sum_outer_thickness_full / \
+                m.cos(m.radians(self.eq_ports_rest[index][2])) * 2 + \
+                    self.sum_outer_thickness_full / 4
+        else:
+            port_depth = self.sum_outer_thickness_full / \
+                m.cos(m.radians(self.eq_ports_rest[index][3])) * 2 + \
+                    self.sum_outer_thickness_full / 4
 
         # Constructing objects to be used for later addition and subtraction
         port_nohole = cq.Workplane("XY").box(
-            port_depth, self.eq_ports_rest[kwargs["index"]][0], self.eq_ports_rest[kwargs["index"]][0])
+            port_depth, self.eq_ports_rest[index][0], self.eq_ports_rest[index][0])
 
         port_hole = cq.Workplane("XY").box(
-            port_depth, self.eq_ports_rest[kwargs["index"]][1], self.eq_ports_rest[kwargs["index"]][1])
+            port_depth, self.eq_ports_rest[index][1], self.eq_ports_rest[index][1])
 
-        port_endcutDOWN = cq.Workplane("XY").circle(self.outer_radius).extrude(100).\
+        port_end_cut_down = cq.Workplane("XY").circle(self.outer_radius).extrude(100).\
             translate(Vector(0, 0, -self.containment_height /
-                      2+self.SumLowerThickness_Full-100))
+                      2+self.sum_lower_thickness_full-100))
 
-        port_endcutUP = cq.Workplane("XY").circle(self.outer_radius).extrude(100).\
+        port_end_cut_up = cq.Workplane("XY").circle(self.outer_radius).extrude(100).\
             translate(Vector(0, 0, +self.containment_height /
-                      2-self.SumUpperThickness_Full))
+                      2-self.sum_upper_thickness_full))
 
-        port_cut = cq.Workplane("XY").circle(self.outer_radius-self.SumOuterThickness_Full).extrude(self.eq_ports_rest[kwargs["index"]][0]*100).\
-            translate(
-                Vector(0, 0, -self.eq_ports_rest[kwargs["index"]][0]*100/2))
+        port_cut = cq.Workplane("XY").\
+                      circle(self.outer_radius - self.sum_outer_thickness_full).\
+                      extrude(self.eq_ports_rest[index][0] * 100).\
+                      translate(Vector(0,
+                                       0,
+                                       -self.eq_ports_rest[index][0] * 100 / 2))
 
-        allignXYport = self.SumOuterThickness_Full / \
-            m.cos(m.radians(self.eq_ports_rest[kwargs["index"]][3])) * m.sin(
-                m.radians(self.eq_ports_rest[kwargs["index"]][3]))
+        allign_xy_port = self.sum_outer_thickness_full / \
+            m.cos(m.radians(self.eq_ports_rest[index][3])) * m.sin(
+                m.radians(self.eq_ports_rest[index][3]))
 
         # Here we cut the hole into the port
         port = port_nohole.cut(port_hole).translate(
-            Vector(self.SumOuterThickness_Full, 0, 0))
+            Vector(self.sum_outer_thickness_full, 0, 0))
 
         # Here we apply the rotations to the port
-        port = port.rotate((0, -self.eq_ports_rest[kwargs["index"]][0], 0), (0, self.eq_ports_rest[kwargs["index"]][0], 0), -self.eq_ports_rest[kwargs["index"]][2]).\
-            rotate((0, 0, -self.eq_ports_rest[kwargs["index"]][0]), (0, 0,
-                   self.eq_ports_rest[kwargs["index"]][0]), self.eq_ports_rest[kwargs["index"]][3])
+        port = port.rotate((0, -self.eq_ports_rest[index][0], 0),
+                           (0, self.eq_ports_rest[index][0], 0),
+                           -self.eq_ports_rest[index][2]).\
+                    rotate((0, 0, -self.eq_ports_rest[index][0]),
+                           (0, 0, self.eq_ports_rest[index][0]),
+                           self.eq_ports_rest[index][3])
 
-        # Here we transalte the port to the proper radious then cut away a containment shaped circular cylinder so that in the final construction the ports will sit flush with the inner containment wall
-        if self.eq_ports_rest[kwargs["index"]][2] < 0:
-            port = port.translate(Vector(-self.outer_radius, -allignXYport-self.eq_ports_rest[kwargs["index"]][5], self.eq_ports_rest[kwargs["index"]][4])).\
-                cut(port_cut).cut(port_endcutUP).\
-                translate(Vector(
-                    self.outer_radius-self.containment_rest[0][3]/2, 0, -self.eq_ports_rest[kwargs["index"]][4]))
+        # Here we transalte the port to the proper radious
+        # then cut away a containment shaped circular cylinder
+        # so that in the final construction the ports will sit
+        # flush with the inner containment wall
+
+        if self.eq_ports_rest[index][2] < 0:
+            port = port.translate(Vector(-self.outer_radius,
+                                         -allign_xy_port - self.eq_ports_rest[index][5],
+                                         self.eq_ports_rest[index][4])).\
+                        cut(port_cut).\
+                        cut(port_end_cut_up).\
+                        translate(Vector(self.outer_radius - self.containment_rest[0][3] / 2,
+                                         0,
+                                         -self.eq_ports_rest[index][4]))
         else:
-            port = port.translate(Vector(-self.outer_radius, -allignXYport-self.eq_ports_rest[kwargs["index"]][5], self.eq_ports_rest[kwargs["index"]][4])).\
-                cut(port_cut).cut(port_endcutDOWN).\
-                translate(Vector(
-                    self.outer_radius-self.containment_rest[0][3]/2, 0, -self.eq_ports_rest[kwargs["index"]][4]))
+            port = port.translate(Vector(-self.outer_radius,
+                                         -allign_xy_port - self.eq_ports_rest[index][5],
+                                         self.eq_ports_rest[index][4])).\
+                        cut(port_cut).\
+                        cut(port_end_cut_down).\
+                        translate(Vector(self.outer_radius - self.containment_rest[0][3] / 2,
+                                         0,
+                                         -self.eq_ports_rest[index][4]))
 
-        # Finally the persistent rotation of the final geometry is applied (so all the ports face center)
-        port = port.rotate((0, 0, self.eq_ports_rest[kwargs["index"]][0]), (
-            0, 0, -self.eq_ports_rest[kwargs["index"]][0]), -degAngle+180)
+        # Finally the persistent rotation of the final
+        # geometry is applied (so all the ports face center)
 
-        return port.translate(Vector(x, y, self.eq_ports_rest[kwargs["index"]][4]-allignZport))
+        port = port.rotate((0, 0, self.eq_ports_rest[index][0]),
+                           (0, 0, -self.eq_ports_rest[index][0]),
+                           -deg_angle + 180)
 
-    def TransLimb(self, **kwargs):
+        return port.translate(Vector(x_poz, y_poz, self.eq_ports_rest[index][4] - allign_z_port))
 
-        angle = (2*m.pi)/self.nr_limbs
-        degAngle = (angle*kwargs["index"]*180)/m.pi
+    def transformer_limb(self, index: int):
+        """Creates all transformer limbs and unions them together.
 
-        transformer_limb = cq.Workplane("XY").box(self.limbs_rest[kwargs["index"]][0], self.limbs_rest[kwargs["index"]][1], self.solenoid_height).\
+        Args:
+            index (int): the limb to be created, 0 is the one at angle 0,
+            1 is the one at angle/360/nr_of_ports, etc.
+
+        Returns:
+            cadquery.Workplane: the transformer limbs.
+        """
+
+        angle = (2 * m.pi) / self.nr_limbs
+        deg_angle = (angle * index * 180) / m.pi
+
+        transformer_limb = cq.Workplane("XY").\
+            box(self.limbs_rest[index][0],
+                self.limbs_rest[index][1],
+                self.solenoid_height).\
             rotate((0, 0, -self.solenoid_height),
-                   (0, 0, self.solenoid_height), degAngle)
+                   (0, 0, self.solenoid_height),
+                   deg_angle)
 
-        x = (self.limb_radius)*m.cos(angle*kwargs["index"])
-        y = (self.limb_radius)*m.sin(angle*kwargs["index"])
+        x_poz = (self.limb_radius) * m.cos(angle * index)
+        y_poz = (self.limb_radius) * m.sin(angle * index)
 
-        sphere_right = self.Spheres(index=kwargs["index"])[0].\
-            rotate((0, 0, -self.solenoid_height), (0, 0, self.solenoid_height), degAngle).\
-            translate(Vector(x, y, 0))
+        sphere_right = self.spheres(index=index)[0].\
+            rotate((0, 0, -self.solenoid_height), (0, 0, self.solenoid_height), deg_angle).\
+            translate(Vector(x_poz, y_poz, 0))
 
-        sphere_left = self.Spheres(index=kwargs["index"])[1].\
-            rotate((0, 0, -self.solenoid_height), (0, 0, self.solenoid_height), degAngle).\
-            translate(Vector(x, y, 0))
+        sphere_left = self.spheres(index=index)[1].\
+            rotate((0, 0, -self.solenoid_height), (0, 0, self.solenoid_height), deg_angle).\
+            translate(Vector(x_poz, y_poz, 0))
 
-        transformer_limb = transformer_limb.translate(Vector(x, y, 0))
+        transformer_limb = transformer_limb.translate(Vector(x_poz, y_poz, 0))
+        transformer_limb = transformer_limb.rotate((0, 0, -self.solenoid_height),
+                                                   (0, 0, self.solenoid_height),
+                                                   self.limb_offset)
+        sphere_right = sphere_right.rotate((0, 0, -self.solenoid_height),
+                                           (0, 0, self.solenoid_height),
+                                           self.limb_offset)
+        sphere_left = sphere_left.rotate((0, 0, -self.solenoid_height),
+                                         (0, 0, self.solenoid_height),
+                                         self.limb_offset)
 
-        return transformer_limb.rotate((0, 0, -self.solenoid_height), (0, 0, self.solenoid_height), self.limb_offset), sphere_right.rotate((0, 0, -self.solenoid_height), (0, 0, self.solenoid_height), self.limb_offset), sphere_left.rotate((0, 0, -self.solenoid_height), (0, 0, self.solenoid_height), self.limb_offset)
+        return transformer_limb, sphere_right, sphere_left
 
-    def Limiter(self, **kwargs):
+    def limiter(self, index: int):
+        """
+        Creates all the limiter parts and unions them together.
+
+        Args:
+            index (int): the limiter to be created, 0 is the one at angle 0,
+            1 is the one at angle/360/nr_of_ports, etc.
+
+        Returns:
+            cadquery.cq.Workplane: the limiters.
+        """
 
         # Firstwall construction
+        angle = (2 * m.pi) / self.nr_ports
+        deg_angle = (angle * index * 180) / m.pi
 
-        angle = (2*m.pi)/self.nr_ports
-        degAngle = (angle*kwargs["index"]*180)/m.pi
+        x_s = (self.outer_radius + self.containment_rest[0][3] / 2 - self.sum_outer_thickness_full +
+               self.limiter_thickness / 2 + self.firstwall_thickness / 2) * m.cos(angle * index)
+        y_s = (self.outer_radius + self.containment_rest[0][3] / 2 - self.sum_outer_thickness_full +
+               self.limiter_thickness / 2 + self.firstwall_thickness / 2) * m.sin(angle * index)
 
-        x_s = (self.outer_radius+self.containment_rest[0][3]/2-self.SumOuterThickness_Full +
-               self.limiter_thickness/2+self.firstwall_thickness/2)*m.cos(angle*kwargs["index"])
-        y_s = (self.outer_radius+self.containment_rest[0][3]/2-self.SumOuterThickness_Full +
-               self.limiter_thickness/2+self.firstwall_thickness/2)*m.sin(angle*kwargs["index"])
+        x_poz = (self.outer_radius + self.containment_rest[0][3] / 2 -
+             self.sum_outer_thickness_full) * m.cos(angle * index)
+        y_poz = (self.outer_radius + self.containment_rest[0][3] / 2 -
+             self.sum_outer_thickness_full) * m.sin(angle * index)
 
-        x = (self.outer_radius+self.containment_rest[0][3]/2 -
-             self.SumOuterThickness_Full)*m.cos(angle*kwargs["index"])
-        y = (self.outer_radius+self.containment_rest[0][3]/2 -
-             self.SumOuterThickness_Full)*m.sin(angle*kwargs["index"])
-
-        allignZport = self.SumOuterThickness_Full / \
-            m.cos(m.radians(self.eq_ports_rest[kwargs["index"]][2])) * m.sin(
-                m.radians(self.eq_ports_rest[kwargs["index"]][2]))
+        allign_z_port = self.sum_outer_thickness_full / \
+            m.cos(m.radians(self.eq_ports_rest[index][2])) * \
+            m.sin(m.radians(self.eq_ports_rest[index][2]))
 
         # Constructing objects to be used for later addition and subtraction
-        firstwall = cq.Workplane("XY").box(
-            self.firstwall_thickness, self.eq_ports_rest[kwargs["index"]][1] - self.limiter_gap, self.eq_ports_rest[kwargs["index"]][1] - self.limiter_gap)
+        firstwall = cq.Workplane("XY").\
+            box(self.firstwall_thickness,
+                self.eq_ports_rest[index][1] - self.limiter_gap,
+                self.eq_ports_rest[index][1] - self.limiter_gap)
 
-        firstwall_rear = cq.Workplane("XY").box(
-            self.limiter_thickness, self.eq_ports_rest[kwargs["index"]][1] - self.limiter_gap, self.eq_ports_rest[kwargs["index"]][1] - self.limiter_gap)
-
-        port_endcutDOWN = cq.Workplane("XY").circle(self.outer_radius).extrude(100).\
-            translate(Vector(0, 0, -self.containment_height /
-                      2+self.SumLowerThickness_Full-100))
-
-        port_endcutUP = cq.Workplane("XY").circle(self.outer_radius).extrude(100).\
-            translate(Vector(0, 0, +self.containment_height /
-                      2-self.SumUpperThickness_Full))
-
-        port_cut = cq.Workplane("XY").circle(self.outer_radius-self.SumOuterThickness_Full).extrude(self.eq_ports_rest[kwargs["index"]][0]*100).\
-            translate(
-                Vector(0, 0, -self.eq_ports_rest[kwargs["index"]][0]*100/2))
-
-        allignXYport = self.SumOuterThickness_Full / \
-            m.cos(m.radians(self.eq_ports_rest[kwargs["index"]][3])) * m.sin(
-                m.radians(self.eq_ports_rest[kwargs["index"]][3]))
+        firstwall_rear = cq.Workplane("XY").\
+            box(self.limiter_thickness,
+                self.eq_ports_rest[index][1] - self.limiter_gap,
+                self.eq_ports_rest[index][1] - self.limiter_gap)
 
         # Here we apply the rotations to the port
-        firstwall = firstwall.rotate((0, -self.eq_ports_rest[kwargs["index"]][0], 0), (0, self.eq_ports_rest[kwargs["index"]][0], 0), -self.eq_ports_rest[kwargs["index"]][2]).\
-            rotate((0, 0, -self.eq_ports_rest[kwargs["index"]][0]), (0, 0,
-                   self.eq_ports_rest[kwargs["index"]][0]), self.eq_ports_rest[kwargs["index"]][3])
+        firstwall = firstwall.rotate((0, -self.eq_ports_rest[index][0], 0),
+                                     (0, self.eq_ports_rest[index][0], 0),
+                                     -self.eq_ports_rest[index][2]).\
+                              rotate((0, 0, -self.eq_ports_rest[index][0]),
+                                     (0, 0, self.eq_ports_rest[index][0]),
+                                     self.eq_ports_rest[index][3])
 
-        firstwall_rear = firstwall_rear.rotate((0, -self.eq_ports_rest[kwargs["index"]][0], 0), (0, self.eq_ports_rest[kwargs["index"]][0], 0), -self.eq_ports_rest[kwargs["index"]][2]).\
-            rotate((0, 0, -self.eq_ports_rest[kwargs["index"]][0]), (0, 0,
-                   self.eq_ports_rest[kwargs["index"]][0]), self.eq_ports_rest[kwargs["index"]][3])
+        firstwall_rear = firstwall_rear.rotate((0, -self.eq_ports_rest[index][0], 0),
+                                               (0, self.eq_ports_rest[index][0], 0),
+                                               -self.eq_ports_rest[index][2]).\
+                                        rotate((0, 0, -self.eq_ports_rest[index][0]),
+                                               (0, 0, self.eq_ports_rest[index][0]),
+                                               self.eq_ports_rest[index][3])
 
-        # Finally the persistent rotation of the final geometry is applied (so all the ports face center)
-        firstwall = firstwall.rotate((0, 0, self.eq_ports_rest[kwargs["index"]][0]), (
-            0, 0, -self.eq_ports_rest[kwargs["index"]][0]), -degAngle+180)
-        firstwall_rear = firstwall_rear.rotate((0, 0, self.eq_ports_rest[kwargs["index"]][0]), (
-            0, 0, -self.eq_ports_rest[kwargs["index"]][0]), -degAngle+180)
+        # Finally the persistent rotation of the
+        # final geometry is applied (so all the ports face center)
+        firstwall = firstwall.rotate((0, 0, self.eq_ports_rest[index][0]),
+                                     (0, 0, -self.eq_ports_rest[index][0]),
+                                     -deg_angle+180)
+        firstwall_rear = firstwall_rear.rotate((0, 0, self.eq_ports_rest[index][0]),
+                                               (0, 0, -self.eq_ports_rest[index][0]),
+                                               -deg_angle+180)
+        firstwall = firstwall.translate(Vector(x_poz,
+                                               y_poz,
+                                               self.eq_ports_rest[index][4] - allign_z_port))
+        firstwall_r = firstwall_rear.translate(Vector(x_s,
+                                                      y_s,
+                                                      self.eq_ports_rest[index][4] - allign_z_port))
 
-        return [firstwall.translate(Vector(x, y, self.eq_ports_rest[kwargs["index"]][4] - allignZport)), firstwall_rear.translate(Vector(x_s, y_s, self.eq_ports_rest[kwargs["index"]][4] - allignZport))]
+        return firstwall, firstwall_r
 
-    def BoundingBox(self, **kwargs):
+    def bounding_box(self):
+        """Creates the bounding box of the reactor.
 
-        bounding_box_outer = cq.Workplane("XY").box(self.limb_radius+self.outer_radius * 8 + self.bbox_thickness,
-                                                    self.limb_radius+self.outer_radius * 8 + self.bbox_thickness, self.solenoid_height * 4 + self.bbox_thickness)
-        bounding_box_inner = cq.Workplane("XY").box(
-            self.limb_radius+self.outer_radius * 8, self.limb_radius+self.outer_radius * 8, self.solenoid_height * 4)
+        Returns:
+            cadquery.cq.Workplane: the bounding box.
+        """
+
+        bounding_box_outer = cq.Workplane("XY").\
+            box(self.limb_radius + self.outer_radius * 8 + self.bbox_thickness,
+                self.limb_radius + self.outer_radius * 8 + self.bbox_thickness,
+                self.solenoid_height * 4 + self.bbox_thickness)
+        bounding_box_inner = cq.Workplane("XY").\
+            box(self.limb_radius + self.outer_radius * 8,
+                self.limb_radius + self.outer_radius * 8,
+                self.solenoid_height * 4)
 
         bounding_box = bounding_box_outer.cut(bounding_box_inner)
 
         return bounding_box
 
-    def Spheres(self, **kwargs):
+    def spheres(self, index: int):
+        """
+        Creates spheres, that represent spherical detectors,
+        that are used with the limbs.
+
+        Args:
+            index (int): the sphere to be created, 0 is the one at angle 0, etc.
+
+        Returns:
+            cadquery.cq.Workplane: the spheres.
+        """
 
         sphere_right = cq.Workplane("XY").sphere(self.sphere_radius).translate(
-            Vector(0, self.sphere_radius+self.limbs_rest[kwargs["index"]][1]/2))
+            Vector(0, self.sphere_radius+self.limbs_rest[index][1]/2))
         sphere_left = cq.Workplane("XY").sphere(self.sphere_radius).translate(
-            Vector(0, -self.sphere_radius-self.limbs_rest[kwargs["index"]][1]/2))
+            Vector(0, -self.sphere_radius-self.limbs_rest[index][1]/2))
 
         return sphere_right, sphere_left
 
-    def PlasmaSrc(self, **kwargs):
+    def plasma_source(self, distance_from_wall: float):
+        """Creates the plasma source.
 
-        distance_from_wall = kwargs["distance_from_wall"]
+        Args:
+            distance_from_wall (float): distance between the plasma
+            source and the first wall.
 
-        cyl_outer_r = self.outer_radius - self.SumOuterThickness_Full - distance_from_wall
-        cyl_inner_r = self.solenoid_radius + \
-            self.SumInnerThickness_Full + distance_from_wall
-        cyl_height = self.containment_height - self.SumLowerThickness_Full - \
-            self.SumUpperThickness_Full - 2*distance_from_wall
-        print(cyl_inner_r)
-        print(cyl_outer_r)
-        print(cyl_height)
+        Returns:
+            cadquery.cq.Workplane: the plasma source.
+        """
 
-        cyl = cq.Workplane("XY").cylinder(cyl_height, cyl_outer_r).cut(
-            cq.Workplane("XY").cylinder(cyl_height, cyl_inner_r))
+        cyl_outer_r = self.outer_radius - self.sum_outer_thickness_full - distance_from_wall
+        cyl_inner_r = self.solenoid_radius + self.sum_inner_thickness_full + distance_from_wall
+        cyl_height = self.containment_height - self.sum_lower_thickness_full - \
+            self.sum_upper_thickness_full - 2 * distance_from_wall
+
+        cyl = cq.Workplane("XY").cylinder(cyl_height, cyl_outer_r).\
+                 cut(cq.Workplane("XY").cylinder(cyl_height, cyl_inner_r))
 
         return cyl
 
 
-class GeometryInjector():
+class GeometryInjector:
+    """
+    A class that houses functions that inject
+    monte carlo code into an input file.
+    """
     def __init__(self, **kwargs):
-
         self.serpent_filepath = kwargs["file"]
         self.line_nr = kwargs["line_nr"]
         self.newfile = kwargs["newfile_location"]
 
-    def InjectLine(self, **kwargs):
+    def inject_line(self, **kwargs):
+        """
+        Injects a line of code into a file.
+        """
         # inject_line
-
-        with open(self.serpent_filepath, "r") as f:
-            contents = f.readlines()
+        with open(self.serpent_filepath, "r", encoding='utf8') as file:
+            contents = file.readlines()
 
         contents.insert(self.line_nr, kwargs["inject_string"])
 
-        with open(self.newfile, "w") as f:
+        with open(self.newfile, "w", encoding='utf8') as file:
             contents = "".join(contents)
-            f.write(contents)
+            file.write(contents)
 
         self.line_nr += 1
 
-        f.close()
+        file.close()
 
-    def Body(self, **kwargs):
+    def body(self, **kwargs):
+        """
+        Body inject function.
+        """
 
-        line = "body {} {} {}\n".format(
-            kwargs["body_name"], kwargs["body_name"], kwargs["material"])
+        line = f"body {kwargs['body_name']} {kwargs['body_name']} {kwargs['material']}\n"
 
-        self.InjectLine(inject_string=line)
+        self.inject_line(inject_string=line)
 
-    def File(self, **kwargs):
+    def file(self, **kwargs):
+        """
+        After the body inject function.
+        """
 
-        line = "file {} \"{}\" {} 0 0 0\n".format(
-            kwargs["object_name"], kwargs["filepath"], kwargs["scale"])
+        line = f"file {kwargs['object_name']} { kwargs['filepath']} {kwargs['scale']} 0 0 0\n"
 
-        self.InjectLine(inject_string=line)
+        self.inject_line(inject_string=line)
 
-        if kwargs["last"] != None:
-            self.InjectLine(inject_string="\n")
+        if kwargs["last"] is not None:
+            self.inject_line(inject_string="\n")
