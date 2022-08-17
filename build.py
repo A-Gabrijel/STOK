@@ -1,3 +1,7 @@
+"""
+The STOK builder, text file search and inject functions to use when
+generating STOK.
+"""
 import math as m
 
 import cadquery as cq
