@@ -133,3 +133,8 @@
 
 # Divertor width
 2000.0
+
+####################################################################
+# -- Plasma parameters
+# Distance between the firstwall and the plasma
+50.0

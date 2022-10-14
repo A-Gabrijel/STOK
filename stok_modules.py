@@ -1,10 +1,7 @@
-"""
-The STOK builder, text file search and inject functions to use when
-generating STOK.
-"""
+"""The STOK builder, text file search and inject functions to use when
+generating STOK."""
 import dataclasses
-import math as m
-from typing import List
+from typing import List, Tuple
 
 import cadquery as cq
 from cadquery import Vector
@@ -27,7 +24,7 @@ class FileReader:
             List[float, str]: returns a tuple of the numerical values.
         """
         with open(self.filename, 'r', encoding='utf8') as file:
-            output: List[str, float] = []
+            output: List[float] = []
             for i, line in enumerate(file):
                 if ("\n" in line[0]) or ("#" in line[0]) or ("%" in line[0]):
                     pass
@@ -62,6 +59,7 @@ class ContainmentParameters:
     layers: List[Layer] = []
     for i in range(3, nr_layers*2+3, 2):
         layers.append(Layer(config[i], config[i+1]))
+    distance_from_plasma: float = config[-1]
 
 class SolenoidParameters:
     """Class that contains the parameters for the solenoid.
@@ -77,8 +75,7 @@ class SolenoidParameters:
     bbox_thickness: float = solenoid[solenoid_start+2]
 
 class PortParameters:
-    """
-    Class that contains the parameters for the ports.
+    """Class that contains the parameters for the ports.
 
     Args:
         nr_ports: int
@@ -93,8 +90,7 @@ class PortParameters:
 
 @dataclasses.dataclass
 class LimbDimensiones:
-    """
-    Class that contains the dimensions for the limbs.
+    """Class that contains the dimensions for the limbs.
 
     Args:
         limb_length: float
@@ -106,15 +102,11 @@ class LimbDimensiones:
     limb_height: float
 
 class LimbParameters:
-    """
-    Class that contains the parameters for the limbs.
+    """Class that contains the parameters for the limbs.
 
     Args:
         nr_limbs: int
         limb_radius: float -> at what radius the limbs are placed.
-        limb_offset: float -> the offset of the limbs from the center. /*TODO: depricate*/
-        limb_rest: List[List[float]] -> a list of lists of floats that
-        contain other parameters. /*TODO: depricate*/
         sphere_radius: float -> the radius of the spheres next to the limb.
     """
     limb_start: int = PortParameters.port_start+3
@@ -126,8 +118,7 @@ class LimbParameters:
         limbs[limb_start+3], limbs[limb_start+4], limbs[limb_start+5])
 
 class LimiterParameters:
-    """
-    Class that contains the parameters for the limiter.
+    """Class that contains the parameters for the limiter.
 
     Attributes:
         firstwall_thickness: float
@@ -140,14 +131,28 @@ class LimiterParameters:
     limiter_gap: float = limiter[limiter_start+1]
     limiter_thickness: float = limiter[limiter_start+2]
 
+class DivertorParameters:
+    """A class that contains the parameters for the divertor.
+
+    Attributes:
+        divertor_thickness: float
+        divertor_gap: float or bool
+        divertor_firstwall_thickness: float
+        TODO divertor_shape: float
+    """
+    divertor_start: int = LimiterParameters.limiter_start+3
+    divertor: List[float] = FileReader("stok_config.txt").reader()
+    divertor_thickness: float = divertor[divertor_start]
+    divertor_gap: float = divertor[divertor_start+1]
+    divertor_firstwall_thickness: float = divertor[divertor_start+2]
+    divertor_shape: float = divertor[divertor_start+3]
+
 class STOK():
-    # TODO: Ditch the index thing and modify all functions from
-    # previous way of doing things, i.e. subscripting lists,
-    # to the one-variable-for-all way.
-    """Creates the class containing all construction components."""
+    # TODO: Add docstrings to all functions.
+    """The class containing all construction components."""
     def central_solenoid(self) -> cq.Workplane:
-        """
-        Creates the central solenoid
+        """Creates the central solenoid, its parameters
+        are controlled by the SolenoidParameters class.
 
         Returns:
             cadquery.cq.Workplane object: The central solenoid
@@ -159,15 +164,15 @@ class STOK():
             translate(Vector(0, 0, SolenoidParameters.solenoid_height/2))
         return solenoid
 
-    def opening(self) -> cq.Workplane:
-        """Creates a single component taht is used to create the opening.
+    def opening(self, gap) -> cq.Workplane:
+        """Creates a single component that is used to create the opening.
 
         Returns:
             cadquery.cq.Workplane object: The component.
         """
         # First the opening geometry is created.
         opening: cq.Workplane = cq.Workplane("YZ").\
-            rect(PortParameters.y_side, PortParameters.z_side)
+            rect(PortParameters.y_side-gap, PortParameters.z_side-gap)
 
         # Then the opening extrusion depth is calculated and
         # the port is extruded.
@@ -187,7 +192,8 @@ class STOK():
         return opening
 
     def openings(self) -> cq.Workplane:
-        """Creates the full array of port cutting components.
+        """Creates the full array of port cutting components its parameters
+        are controlled via the PortParameters class.
 
         Returns:
             cq.Workplane: The array of port cutting components.
@@ -195,10 +201,10 @@ class STOK():
         # Here we call the opening_member function to create a single
         # opening cutter and then rotate it via the Z axis to achieve
         # the port.
-        openings = self.opening()
+        openings = self.opening(gap=0)
 
         for i in range(1, PortParameters.nr_ports):
-            openings = openings.union(self.opening().\
+            openings = openings.union(self.opening(gap=0).\
                 rotate((0, 0, 1),(0, 0, -1), i*360/PortParameters.nr_ports))
 
         return openings
@@ -262,7 +268,8 @@ class STOK():
         return containment
 
     def containment(self) -> List[cq.Workplane]:
-        """Creates the containment layer array with no port openings.
+        """Creates the containment layer array with no port openings its parameters
+        are controlled via the ContaimentParameters class.
 
         Returns:
             List[cq.Workplane]: the containment layer list.
@@ -274,7 +281,9 @@ class STOK():
         return containment
 
     def containment_with_ports(self) -> List[cq.Workplane]:
-        """Creates the containment layer array with port openings.
+        """Creates the containment layer array with port openings its parameters
+        are controlled via the ContaimentParameters class and the PortParameters
+        class.
 
         Returns:
             List[cq.Workplane]: the containment layer list.
@@ -286,121 +295,13 @@ class STOK():
         return containment
 
 
-    def port(self, index: int):
-        # TODO: simplify port constructor function.
-        """Creates a port.
-
-        Args:
-            index (int): the port to be created, 0 is the one at angle 0,
-            then the next one is at angle index/(nr_of_ports/360), etc.
-
-        Returns:
-            cadquery.cq.Workplane: a port.
-        """
-
-        angle = (2 * m.pi) / PortParameters.nr_ports
-        deg_angle = (angle * index * 180) / m.pi
-
-        x_poz = (ContainmentParameters.outer_radius -
-                 ContainmentParameters.containment_rest[0][3]/2) * m.cos(angle * index)
-        y_poz = (ContainmentParameters.outer_radius -
-                 ContainmentParameters.containment_rest[0][3]/2) * m.sin(angle * index)
-
-        allign_z_port = SumOfThicknesess.sum_outer_thickness_full / \
-            m.cos(m.radians(PortParameters.eq_ports_rest[index][2])) * \
-            m.sin(m.radians(PortParameters.eq_ports_rest[index][2]))
-
-        if PortParameters.eq_ports_rest[index][2] != 0:
-            port_depth = SumOfThicknesess.sum_outer_thickness_full / \
-                m.cos(m.radians(PortParameters.eq_ports_rest[index][2])) * 2 + \
-                    SumOfThicknesess.sum_outer_thickness_full / 4
-        else:
-            port_depth = SumOfThicknesess.sum_outer_thickness_full / \
-                m.cos(m.radians(PortParameters.eq_ports_rest[index][3])) * 2 + \
-                    SumOfThicknesess.sum_outer_thickness_full / 4
-
-        # Constructing objects to be used for later addition and subtraction
-        port_nohole = cq.Workplane("XY").box(
-            port_depth,
-            PortParameters.eq_ports_rest[index][0],
-            PortParameters.eq_ports_rest[index][0])
-
-        port_hole = cq.Workplane("XY").box(
-            port_depth,
-            PortParameters.eq_ports_rest[index][1],
-            PortParameters.eq_ports_rest[index][1])
-
-        port_end_cut_down = cq.Workplane("XY").\
-            circle(ContainmentParameters.outer_radius).extrude(100).\
-            translate(Vector(0, 0, -ContainmentParameters.containment_height /
-                2+SumOfThicknesess.sum_lower_thickness_full-100))
-
-        port_end_cut_up = cq.Workplane("XY").\
-            circle(ContainmentParameters.outer_radius).extrude(100).\
-            translate(Vector(0, 0, +ContainmentParameters.containment_height /
-                2-SumOfThicknesess.sum_upper_thickness_full))
-
-        port_cut = cq.Workplane("XY").\
-            circle(ContainmentParameters.outer_radius - SumOfThicknesess.sum_outer_thickness_full).\
-            extrude(PortParameters.eq_ports_rest[index][0] * 100).\
-            translate(Vector(0, 0,
-                -PortParameters.eq_ports_rest[index][0] * 100 / 2))
-
-        allign_xy_port = SumOfThicknesess.sum_outer_thickness_full / \
-            m.cos(m.radians(PortParameters.eq_ports_rest[index][3])) * m.sin(
-                m.radians(PortParameters.eq_ports_rest[index][3]))
-
-        # Here we cut the hole into the port
-        port = port_nohole.cut(port_hole).translate(
-            Vector(SumOfThicknesess.sum_outer_thickness_full, 0, 0))
-
-        # Here we apply the rotations to the port
-        port = port.rotate((0, -PortParameters.eq_ports_rest[index][0], 0),
-                           (0, PortParameters.eq_ports_rest[index][0], 0),
-                           -PortParameters.eq_ports_rest[index][2]).\
-                    rotate((0, 0, -PortParameters.eq_ports_rest[index][0]),
-                           (0, 0, PortParameters.eq_ports_rest[index][0]),
-                           PortParameters.eq_ports_rest[index][3])
-
-        # Here we transalte the port to the proper radious
-        # then cut away a containment shaped circular cylinder
-        # so that in the final construction the ports will sit
-        # flush with the inner containment wall
-
-        if PortParameters.eq_ports_rest[index][2] < 0:
-            port = port.translate(Vector(
-                -ContainmentParameters.outer_radius,
-                -allign_xy_port - PortParameters.eq_ports_rest[index][5],
-                PortParameters.eq_ports_rest[index][4])).\
-                        cut(port_cut).\
-                        cut(port_end_cut_up).\
-                        translate(Vector(ContainmentParameters.outer_radius -\
-                            ContainmentParameters.containment_rest[0][3] / 2,
-                            0, -PortParameters.eq_ports_rest[index][4]))
-        else:
-            port = port.translate(Vector(
-                -ContainmentParameters.outer_radius,
-                -allign_xy_port - PortParameters.eq_ports_rest[index][5],
-                PortParameters.eq_ports_rest[index][4])).\
-                        cut(port_cut).\
-                        cut(port_end_cut_down).\
-                        translate(Vector(ContainmentParameters.outer_radius -\
-                            ContainmentParameters.containment_rest[0][3] / 2,
-                            0, -PortParameters.eq_ports_rest[index][4]))
-
-        # Finally the persistent rotation of the final
-        # geometry is applied (so all the ports face center)
-
-        port = port.rotate((0, 0, PortParameters.eq_ports_rest[index][0]),
-                           (0, 0, -PortParameters.eq_ports_rest[index][0]),
-                           -deg_angle + 180)
-
-        return port.translate(Vector(x_poz, y_poz,
-                                     PortParameters.eq_ports_rest[index][4] - allign_z_port))
+    def port(self):
+        # TODO: New port construction function.
+        pass
 
     def transformer_limbs(self):
-        """
-        This method constructs the transformer limbs.
+        """This method constructs the transformer limbs using the parameters
+        defined in the LimbParameter class.
 
         Returns:
             cadquery.cq.Workplane: a union of transformer limbs.
@@ -425,88 +326,71 @@ class STOK():
         transformer_limbs = transformer_limbs.rotate((0, 0, 1), (0, 0, -1), 22.5)
 
         return transformer_limbs
-
-    def limiter(self, index: int):
-        """
-        Creates all the limiter parts and unions them together.
-
-        Args:
-            index (int): the limiter to be created, 0 is the one at angle 0,
-            1 is the one at angle/360/nr_of_ports, etc.
+    def limiter_firstwall_openings(self):
+        """Creates the full array of port cutting components
+        with the gap thickness parameter.
 
         Returns:
-            cadquery.cq.Workplane: the limiters.
+            cq.Workplane: The array of port cutting components.
+        """
+        # Here we call the opening_member function to create a single
+        # opening cutter and then rotate it via the Z axis to achieve
+        # the port.
+        openings = self.opening(gap=LimiterParameters.limiter_gap)
+
+        for i in range(1, PortParameters.nr_ports):
+            openings = openings.union(self.opening(gap=LimiterParameters.limiter_gap).\
+                rotate((0, 0, 1),(0, 0, -1), i*360/PortParameters.nr_ports))
+
+        return openings
+
+    def limiter_firstwall(self) -> cq.Workplane:
+        """A function that creates the firstwall limiter set parameters are
+        controlled via the LimiterParameters class.
+
+        Returns:
+            cadquery.cq.Workplane: the firstwall.
+        """
+        # First we calculate the position of the firstwall of the cont.
+        outer_sum = 0.0
+        for i in range(ContainmentParameters.nr_layers):
+            outer_sum = outer_sum + ContainmentParameters.layers[i].upper_lower_outer
+        firstwall_torus: cq.Workplane = self.create_torus(
+            inner_r=ContainmentParameters.outer_radius-outer_sum,
+            outer_r=ContainmentParameters.outer_radius-outer_sum+\
+                LimiterParameters.firstwall_thickness,
+            height=SolenoidParameters.solenoid_height)
+        # Then we create the firstwall pieces and intersect them with the torus.
+        firstwall = firstwall_torus.intersect(self.limiter_firstwall_openings())
+
+        return firstwall
+
+    def limiter_backwall(self) -> cq.Workplane:
+        """Creates the back of the limiter from the firstwall onwards parameters are
+        controlled via the LimiterParameters class.
+
+        Returns:
+            cq.Workplane: The backwall.
         """
 
-        # Firstwall construction
-        angle = (2 * m.pi) / PortParameters.nr_ports
-        deg_angle = (angle * index * 180) / m.pi
+        # First we create a box with the correct dimensions.
+        outer_sum = 0.0
+        for i in range(ContainmentParameters.nr_layers):
+            outer_sum = outer_sum + ContainmentParameters.layers[i].upper_lower_outer
+        firstwall_torus: cq.Workplane = self.create_torus(
+            inner_r=ContainmentParameters.outer_radius-outer_sum+\
+                LimiterParameters.firstwall_thickness,
+            outer_r=ContainmentParameters.outer_radius-outer_sum+\
+                LimiterParameters.limiter_thickness+LimiterParameters.firstwall_thickness,
+            height=SolenoidParameters.solenoid_height)
+        # Then we create the firstwall pieces and intersect them with the torus.
+        backwall = firstwall_torus.intersect(self.limiter_firstwall_openings())
 
-        x_s = (ContainmentParameters.outer_radius +
-               ContainmentParameters.containment_rest[0][3] / 2 -
-               SumOfThicknesess.sum_outer_thickness_full +
-               LimiterParameters.limiter_thickness / 2 +
-               LimiterParameters.firstwall_thickness / 2) * m.cos(angle * index)
-        y_s = (ContainmentParameters.outer_radius +
-               ContainmentParameters.containment_rest[0][3] / 2 -
-               SumOfThicknesess.sum_outer_thickness_full +
-               LimiterParameters.limiter_thickness / 2 +
-               LimiterParameters.firstwall_thickness / 2) * m.sin(angle * index)
+        return backwall
 
-        x_poz = (ContainmentParameters.outer_radius +
-                 ContainmentParameters.containment_rest[0][3] / 2 -
-                 SumOfThicknesess.sum_outer_thickness_full) * m.cos(angle * index)
-        y_poz = (ContainmentParameters.outer_radius +
-                 ContainmentParameters.containment_rest[0][3] / 2 -
-                 SumOfThicknesess.sum_outer_thickness_full) * m.sin(angle * index)
-
-        allign_z_port = SumOfThicknesess.sum_outer_thickness_full / \
-            m.cos(m.radians(PortParameters.eq_ports_rest[index][2])) * \
-            m.sin(m.radians(PortParameters.eq_ports_rest[index][2]))
-
-        # Constructing objects to be used for later addition and subtraction
-        firstwall = cq.Workplane("XY").\
-            box(LimiterParameters.firstwall_thickness,
-                PortParameters.eq_ports_rest[index][1] - LimiterParameters.limiter_gap,
-                PortParameters.eq_ports_rest[index][1] - LimiterParameters.limiter_gap)
-
-        firstwall_rear = cq.Workplane("XY").\
-            box(LimiterParameters.limiter_thickness,
-                PortParameters.eq_ports_rest[index][1] - LimiterParameters.limiter_gap,
-                PortParameters.eq_ports_rest[index][1] - LimiterParameters.limiter_gap)
-
-        # Here we apply the rotations to the port
-        firstwall = firstwall.rotate((0, -PortParameters.eq_ports_rest[index][0], 0),
-                                     (0, PortParameters.eq_ports_rest[index][0], 0),
-                                     -PortParameters.eq_ports_rest[index][2]).\
-                              rotate((0, 0, -PortParameters.eq_ports_rest[index][0]),
-                                     (0, 0, PortParameters.eq_ports_rest[index][0]),
-                                     PortParameters.eq_ports_rest[index][3])
-
-        firstwall_rear = firstwall_rear.rotate((0, -PortParameters.eq_ports_rest[index][0], 0),
-                                               (0, PortParameters.eq_ports_rest[index][0], 0),
-                                               -PortParameters.eq_ports_rest[index][2]).\
-                                        rotate((0, 0, -PortParameters.eq_ports_rest[index][0]),
-                                               (0, 0, PortParameters.eq_ports_rest[index][0]),
-                                               PortParameters.eq_ports_rest[index][3])
-
-        # Finally the persistent rotation of the
-        # final geometry is applied (so all the ports face center)
-        firstwall = firstwall.rotate((0, 0, PortParameters.eq_ports_rest[index][0]),
-                                     (0, 0, -PortParameters.eq_ports_rest[index][0]),
-                                     -deg_angle+180)
-        firstwall_rear = firstwall_rear.rotate((0, 0, PortParameters.eq_ports_rest[index][0]),
-                                               (0, 0, -PortParameters.eq_ports_rest[index][0]),
-                                               -deg_angle+180)
-        firstwall = firstwall.translate(Vector(
-            x_poz, y_poz, PortParameters.eq_ports_rest[index][4] - allign_z_port))
-        firstwall_r = firstwall_rear.translate(Vector(
-            x_s, y_s, PortParameters.eq_ports_rest[index][4] - allign_z_port))
-
-        return firstwall, firstwall_r
-
-    def bounding_box(self):
-        """Creates the bounding box of the reactor.
+    def bounding_box(self) -> cq.Workplane:
+        """Creates the bounding box of the reactor parameters accessed
+        form the SolenoidParameters class.
 
         Returns:
             cadquery.cq.Workplane: the bounding box.
@@ -515,12 +399,12 @@ class STOK():
         bounding_box_outer = cq.Workplane("XY").\
             box(LimbParameters.limb_radius +
                 ContainmentParameters.outer_radius * 8 +
-                BboxParameters.bbox_thickness,
+                SolenoidParameters.bbox_thickness,
                 LimbParameters.limb_radius +
                 ContainmentParameters.outer_radius * 8 +
-                BboxParameters.bbox_thickness,
+                SolenoidParameters.bbox_thickness,
                 SolenoidParameters.solenoid_height * 4 +
-                BboxParameters.bbox_thickness)
+                SolenoidParameters.bbox_thickness)
         bounding_box_inner = cq.Workplane("XY").\
             box(LimbParameters.limb_radius +
                 ContainmentParameters.outer_radius * 8,
@@ -532,10 +416,10 @@ class STOK():
 
         return bounding_box
 
-    def spheres(self, index: int):
-        """
-        Creates spheres, that represent spherical detectors,
-        that are used with the limbs.
+    def sphere_pair(self) -> Tuple[cq.Workplane, cq.Workplane]:
+        """Creates spheres, that represent spherical detectors,
+        that are used with the limbs parameters are accessed form
+        the PortParameters class.
 
         Args:
             index (int): the sphere to be created, 0 is the one at angle 0, etc.
@@ -547,18 +431,35 @@ class STOK():
         sphere_right = cq.Workplane("XY").\
             sphere(LimbParameters.sphere_radius).\
             translate(
-                Vector(0, LimbParameters.sphere_radius +
-                       LimbParameters.limbs_rest[index][1]/2))
+                Vector(LimbParameters.limb_radius, LimbParameters.sphere_radius +
+                       LimbParameters.limb_dimensions.limb_width/2))
         sphere_left = cq.Workplane("XY").\
             sphere(LimbParameters.sphere_radius).\
             translate(
-                Vector(0, -LimbParameters.sphere_radius -
-                       LimbParameters.limbs_rest[index][1]/2))
+                Vector(LimbParameters.limb_radius, -LimbParameters.sphere_radius -
+                       LimbParameters.limb_dimensions.limb_width/2))
 
         return sphere_right, sphere_left
 
-    def plasma_source(self, distance_from_wall: float):
-        """Creates the plasma source.
+    def sphere_pair_array(self) -> List[List[cq.Workplane]]:
+        """Creates an array of sphere pairs.
+
+        Returns:
+            List[Tuple[cq.Workplane, cq.Workplane]]: the sphere pair array.
+        """
+
+        sphere_pair_array: List[List[cq.Workplane]] = []
+        for i in range(LimbParameters.nr_limbs):
+            sphere_pair_array.append([
+                self.sphere_pair()[0].rotate((0,0,1),(0,0,-1),i*360/LimbParameters.nr_limbs),
+                self.sphere_pair()[1].rotate((0,0,1),(0,0,-1),i*360/LimbParameters.nr_limbs)
+                ])
+
+        return sphere_pair_array
+
+    def plasma_source(self) -> cq.Workplane:
+        """Creates the plasma source parameters are located in the ContainmentParameters
+        class.
 
         Args:
             distance_from_wall (float): distance between the plasma
@@ -568,17 +469,51 @@ class STOK():
             cadquery.cq.Workplane: the plasma source.
         """
 
-        cyl_outer_r = ContainmentParameters.outer_radius -\
-            SumOfThicknesess.sum_outer_thickness_full - distance_from_wall
-        cyl_inner_r = SolenoidParameters.solenoid_radius +\
-            SumOfThicknesess.sum_inner_thickness_full + distance_from_wall
-        cyl_height = ContainmentParameters.containment_height -\
-            SumOfThicknesess.sum_lower_thickness_full - \
-            SumOfThicknesess.sum_upper_thickness_full - 2 * distance_from_wall
+        inner_r: float = SolenoidParameters.solenoid_radius
+        outer_r: float = ContainmentParameters.outer_radius
+        height: float = ContainmentParameters.containment_height
 
-        cyl = cq.Workplane("XY").cylinder(cyl_height, cyl_outer_r).\
-                 cut(cq.Workplane("XY").cylinder(cyl_height, cyl_inner_r))
+        for i in range(ContainmentParameters.nr_layers):
+            inner_r = inner_r + ContainmentParameters.layers[i].inner
+            outer_r = outer_r - ContainmentParameters.layers[i].upper_lower_outer
+            height = height - ContainmentParameters.layers[i].upper_lower_outer*2
+        smaller_torus = self.create_torus(
+            inner_r=inner_r+ContainmentParameters.layers[-1].\
+                inner+ContainmentParameters.distance_from_plasma,
+            outer_r=outer_r-ContainmentParameters.layers[-1].\
+                upper_lower_outer-ContainmentParameters.distance_from_plasma,
+            height=height-ContainmentParameters.layers[-1].\
+                upper_lower_outer*2-ContainmentParameters.distance_from_plasma*2)
 
-        return cyl
+        return smaller_torus
 
-# TODO: add divertor constructor here
+    def divertor_cutter(self) -> cq.Workplane:
+        """Creates the divertor component its parameters are contained in the DivertorParameters
+        class.
+
+        Returns:
+            cq.Workplane: The component.
+        """
+
+        inner_sum: float = 0.0
+        outer_sum: float = 0.0
+        # First we calculate the summ of all thicknesess for the inner and outer radius.
+        for i in range(ContainmentParameters.nr_layers):
+            inner_sum = inner_sum + ContainmentParameters.layers[i].inner
+            outer_sum = outer_sum + ContainmentParameters.layers[i].upper_lower_outer
+        # Then we add the radius of the containment to each
+        inner_sum = inner_sum + SolenoidParameters.solenoid_radius
+        outer_sum = outer_sum + ContainmentParameters.outer_radius
+        center_point = (inner_sum + outer_sum)/2
+        # Now that we have the inner and outer radius we have the position of the divertor
+        # and we can create a torus that cuts the containment layers.
+        cutter_torus = self.create_torus(center_point-DivertorParameters.divertor_thickness/2,
+                                         center_point+DivertorParameters.divertor_thickness/2,
+                                         SolenoidParameters.solenoid_height).\
+                       translate(Vector(0,0,-SolenoidParameters.solenoid_height/2))
+
+        return cutter_torus
+    
+    def divertor(self):
+        # TODO: finish this.
+        pass

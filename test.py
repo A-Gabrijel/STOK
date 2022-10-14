@@ -2,4 +2,4 @@
 import cadquery as cq
 from stok_modules import STOK
 
-show_object(STOK().transformer_limbs())
+show_object(STOK().limiter_firstwall())
