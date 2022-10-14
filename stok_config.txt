@@ -1,0 +1,140 @@
+# -- This is the STOK manipulation file. It is ordered so only change the layout
+# -- where it is intended to be changed.
+# -- These are the general containment parameters.
+# Outer containment radius
+4945.0
+
+# Containment Height
+5570.0
+
+# Nr. of containment layers
+8
+
+####################################################################
+# -- These are containment parameters specific to each layer. If more layers
+# -- are needed, just add them at the end.
+# -- Every new containment layer is to be set identically (as in the same format)
+# -- as the first one.
+# 1:
+# Upper, lower and outer wall thickness
+150.0
+
+# Inner wall thickness
+50.0
+
+# 2:
+# Upper, lower and outer wall thickness
+200.0
+
+# Inner wall thickness
+10.0
+
+# 3:
+# Upper, lower and outer wall thickness
+550.0
+
+# Inner wall thickness
+150.0
+
+# 4:
+# Upper, lower and outer wall thickness
+150.0
+
+# Inner wall thickness
+150.0
+
+# 5:
+# Upper, lower and outer wall thickness
+150.0
+
+# Inner wall thickness
+150.0
+
+# 6:
+# Upper, lower and outer wall thickness
+150.0
+
+# Inner wall thickness
+150.0
+
+# 7:
+# Upper, lower and outer wall thickness
+150.0
+
+# Inner wall thickness
+150.0
+
+# 8:
+# Upper, lower and outer wall thickness
+150.0
+
+# Inner wall thickness
+150.0
+
+####################################################################
+# -- Solenoid parameters
+# Solenoid radius (this will also determine the inner radius of the containment)
+900.0
+
+# Height of solenoid
+6400.0
+
+####################################################################
+# -- Bounding box parameters
+# Bounding box wall thickness
+2000.0
+
+####################################################################
+# -- Port parameters
+# Number of ports
+8
+
+# Longer side size (Z direction also could be interpreted as height)
+960.0
+
+# Shorter side size (Y direction also could be interpreted as width)
+460.0
+
+####################################################################
+# -- Limb parameters
+# Number of limbs
+8
+
+# Distance between outer containment radius and the limb
+1555.0
+
+# Default sphere radius
+500.0
+
+# Limb length
+2000.0
+
+# Limb width
+1000.0
+
+# Limb height (if left 0 it defaults to the containment height)
+12000.0
+
+####################################################################
+# -- Limiter parameters
+# Firstwall thickness
+200.0
+
+# The gap between the limiter and the port wall
+15
+
+# Thickness of the limiter from the firstwall onwards
+1100.0
+
+####################################################################
+# -- Divertor parameters
+# The thickness of the plasma facing component of the divertor
+100.0
+
+# Divertor width
+2000.0
+
+####################################################################
+# -- Plasma parameters
+# Distance between the firstwall and the plasma
+50.0
