@@ -134,6 +134,12 @@
 # Divertor width
 2000.0
 
+# Divertor gap (gap between the containment and divertor)
+50.0
+
+# Divertor thickness
+400.0
+
 ####################################################################
 # -- Plasma parameters
 # Distance between the firstwall and the plasma

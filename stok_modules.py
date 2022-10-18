@@ -142,13 +142,13 @@ class DivertorParameters:
     """
     divertor_start: int = LimiterParameters.limiter_start+3
     divertor: List[float] = FileReader("stok_config.txt").reader()
-    divertor_thickness: float = divertor[divertor_start]
-    divertor_gap: float = divertor[divertor_start+1]
-    divertor_firstwall_thickness: float = divertor[divertor_start+2]
-    divertor_shape: float = divertor[divertor_start+3]
+    divertor_thickness: float = divertor[divertor_start+3]
+    divertor_width: float = divertor[divertor_start+1]
+    divertor_gap: float = divertor[divertor_start+2]
+    divertor_firstwall_thickness: float = divertor[divertor_start]
+    divertor_shape: float = divertor[divertor_start+4]
 
 class STOK():
-    # TODO: Add docstrings to all functions.
     """The class containing all construction components."""
     def central_solenoid(self) -> cq.Workplane:
         """Creates the central solenoid, its parameters
@@ -164,12 +164,18 @@ class STOK():
             translate(Vector(0, 0, SolenoidParameters.solenoid_height/2))
         return solenoid
 
-    def opening(self, gap) -> cq.Workplane:
-        """Creates a single component that is used to create the opening.
+    def opening(self, gap: float) -> cq.Workplane:
+        """Creates a single component that is used to create an opening.
+        Parameters are controlled by the PortParameters class.
+
+        Args:
+            gap (float): how much on each side will the cutter be smaller
+            used when creating limiter components.
 
         Returns:
             cadquery.cq.Workplane object: The component.
         """
+
         # First the opening geometry is created.
         opening: cq.Workplane = cq.Workplane("YZ").\
             rect(PortParameters.y_side-gap, PortParameters.z_side-gap)
@@ -198,9 +204,9 @@ class STOK():
         Returns:
             cq.Workplane: The array of port cutting components.
         """
-        # Here we call the opening_member function to create a single
-        # opening cutter and then rotate it via the Z axis to achieve
-        # the port.
+        # We call the opening function which gives us
+        # a an opening cutter object, which we then rotate
+        # into position. Gap is 0 because there is no gap.
         openings = self.opening(gap=0)
 
         for i in range(1, PortParameters.nr_ports):
@@ -209,17 +215,18 @@ class STOK():
 
         return openings
 
-    def create_torus(self, inner_r, outer_r, height) -> cq.Workplane:
+    def create_torus(self, inner_r: float, outer_r: float, height: float) -> cq.Workplane:
         """Creates a rectangular torus.
 
         Args:
-            inner_r (_type_): inner radius of the torus.
-            outer_r (_type_): outer radius of the torus.
-            height (_type_): the height of the torus.
+            inner_r (float): inner radius of the torus.
+            outer_r (float): outer radius of the torus.
+            height (float): the height of the torus.
 
         Returns:
             cq.Workplane: the torus.
         """
+
         # First we create the innermost and outermost containment cylinder
         # and subtract one from the other.
         cylinner: cq.Workplane = cq.Workplane("XY").\
@@ -230,11 +237,11 @@ class STOK():
 
         return torus
 
-    def containment_layer(self, layer_nr) -> cq.Workplane:
+    def containment_layer(self, layer_nr: int) -> cq.Workplane:
         """Containment layer creation function.
 
         Args:
-            layer_nr (_type_): which layer to create.
+            layer_nr (int): which layer to create.
 
         Returns:
             cq.Workplane: the layer.
@@ -244,6 +251,8 @@ class STOK():
         inner_r: float = SolenoidParameters.solenoid_radius
         outer_r: float = ContainmentParameters.outer_radius
         height: float = ContainmentParameters.containment_height
+        # If we are at layer 0 we use the base parameters of inner and outer radius
+        # if not then we use the other ones.
         if layer_nr == 0:
             bigger_tourus: cq.Workplane = self.create_torus(
                 inner_r=inner_r, outer_r=outer_r, height=height)
@@ -262,7 +271,7 @@ class STOK():
                 inner_r=inner_r+ContainmentParameters.layers[layer_nr].inner,
                 outer_r=outer_r-ContainmentParameters.layers[layer_nr].upper_lower_outer,
                 height=height-ContainmentParameters.layers[layer_nr].upper_lower_outer*2)
-
+        # Here we cut the smaller torus from the bigger one, creating our containment layer.
         containment: cq.Workplane = bigger_tourus.cut(smaller_torus)
 
         return containment
@@ -272,8 +281,9 @@ class STOK():
         are controlled via the ContaimentParameters class.
 
         Returns:
-            List[cq.Workplane]: the containment layer list.
+            List (cq.Workplane): the containment layer list.
         """
+
         containment: List[cq.Workplane] = []
         for i in range(ContainmentParameters.nr_layers):
             containment.append(self.containment_layer(i))
@@ -286,18 +296,13 @@ class STOK():
         class.
 
         Returns:
-            List[cq.Workplane]: the containment layer list.
+            List (cq.Workplane): the containment layer list.
         """
         containment: List[cq.Workplane] = []
         for i in range(ContainmentParameters.nr_layers):
             containment.append(self.containment_layer(i).cut(self.openings()))
 
         return containment
-
-
-    def port(self):
-        # TODO: New port construction function.
-        pass
 
     def transformer_limbs(self):
         """This method constructs the transformer limbs using the parameters
@@ -306,6 +311,7 @@ class STOK():
         Returns:
             cadquery.cq.Workplane: a union of transformer limbs.
         """
+
         # First we create a box with the correct dimensions.
         box: cq.Workplane = cq.Workplane("XY").box(
             LimbParameters.limb_dimensions.limb_length,
@@ -333,6 +339,7 @@ class STOK():
         Returns:
             cq.Workplane: The array of port cutting components.
         """
+
         # Here we call the opening_member function to create a single
         # opening cutter and then rotate it via the Z axis to achieve
         # the port.
@@ -351,6 +358,7 @@ class STOK():
         Returns:
             cadquery.cq.Workplane: the firstwall.
         """
+
         # First we calculate the position of the firstwall of the cont.
         outer_sum = 0.0
         for i in range(ContainmentParameters.nr_layers):
