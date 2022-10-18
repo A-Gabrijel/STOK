@@ -128,5 +128,11 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# tests
+# Tests
 test.py
+
+# No geometry files
+*.stl
+*.msh
+*.step
+*.stp

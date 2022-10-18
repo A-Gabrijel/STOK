@@ -1,9 +1,11 @@
 """The STOK builder, text file search and inject functions to use when
 generating STOK."""
 import dataclasses
+import os
 from typing import List, Tuple
 
 import cadquery as cq
+import gmsh
 from cadquery import Vector
 
 
@@ -521,7 +523,45 @@ class STOK():
                        translate(Vector(0,0,-SolenoidParameters.solenoid_height/2))
 
         return cutter_torus
-    
+
     def divertor(self):
         # TODO: finish this.
         pass
+
+    def export_stl(self, the_solid: str,
+                   max_triangle_size: float,
+                   filename: str) -> None:
+        """Exports a component as an stl file.
+
+        Args:
+            the_solid (cq.Workplane): the component to be exported.
+            filename (str): the name of the file.
+        """
+        cpus = os.cpu_count()
+
+        gmsh.initialize()
+        gmsh.model.add("member")
+
+        # Import the step file as a OCCT shape.
+        gmsh.model.occ.importShapes(the_solid)
+
+        # Push the solid to the gmsh model.
+        gmsh.model.occ.synchronize()
+
+        # Finally, let's specify a global mesh size and mesh the partitioned model:
+        #gmsh.option.setNumber("Mesh.MeshSizeMin", 3)
+        gmsh.option.setNumber("Mesh.MeshSizeMax", max_triangle_size)
+
+        # Set nr of cores to run on.
+        gmsh.option.setNumber("General.NumThreads", cpus)
+
+        # Type of meshing algorithm.
+        gmsh.option.setNumber("Mesh.Algorithm", 6)
+        gmsh.option.setNumber("Mesh.AngleToleranceFacetOverlap", 0.1)
+
+        # Generate surface mesh.
+        gmsh.model.mesh.generate(2)
+
+        # Write the mesh to file.
+        gmsh.write(filename)
+        gmsh.finalize()
