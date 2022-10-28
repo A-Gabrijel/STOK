@@ -524,8 +524,18 @@ class STOK():
 
         return cutter_torus
 
-    def divertor(self):
-        # TODO: finish this.
+    def divertor_firstwall(self):
+        # TODO: finish this function.
+        """The firstwall of the divertor - i.e. the plasma facing component.
+
+        Returns:
+            cq.Workplane: The component.
+        """
+
+        return 0
+
+    def divertor_backwall(self):
+        # TODO: finish this function.
         pass
 
     def export_stl(self, the_solid: str,
