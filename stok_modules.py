@@ -482,8 +482,8 @@ class STOK():
         sphere_pair_array: List[List[cq.Workplane]] = []
         for i in range(LimbParameters.nr_limbs):
             sphere_pair_array.append([
-                self.sphere_pair()[0].rotate((0,0,1),(0,0,-1),i*360/LimbParameters.nr_limbs),
-                self.sphere_pair()[1].rotate((0,0,1),(0,0,-1),i*360/LimbParameters.nr_limbs)
+                self.sphere_pair()[0].rotate((0,0,1),(0,0,-1),i*360/LimbParameters.nr_limbs + 22.5),
+                self.sphere_pair()[1].rotate((0,0,1),(0,0,-1),i*360/LimbParameters.nr_limbs + 22.5)
                 ])
 
         return sphere_pair_array
