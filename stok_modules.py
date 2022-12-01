@@ -16,6 +16,7 @@ class FileReader:
 
     def __init__(self, *args):
         self.filename = args[0]
+        self.read = self.reader()
 
     def reader(self) -> List[float]:
         """
@@ -45,6 +46,22 @@ class Layer:
     upper_lower_outer: float
     inner: float
 
+def layers_all() -> Tuple:
+    """Returns a list of Layer objects.
+
+    Args:
+        args: float
+
+    Returns:
+        List[Layer]: returns a list of Layer objects.
+    """
+    output: List = []
+    nr_layers = int(FileReader('stok_config.txt').read[2])
+    for i in range(3, nr_layers*2+3, 2):
+        output.append(Layer(FileReader("stok_config.txt").read[i],
+                            FileReader("stok_config.txt").read[i+1]))
+    return tuple(output)
+
 @dataclass(order=True, frozen=True)
 class ContainmentParameters:
     """A class to store the parameters for the containment.
@@ -56,15 +73,11 @@ class ContainmentParameters:
         layers: List[Layer]
         distance_from_plasma: float
     """
-    config: List[float] = field(default=FileReader("stok_config.txt").reader(),
-                                compare=False, hash=False, repr=False)
-    outer_radius: float = config[0]
-    containment_height: float = config[1]
-    nr_layers: int = int(config[2])
-    layers: List[Layer] = field(default_factory=list)
-    for i in range(3, nr_layers*2+3, 2):
-        layers.append(Layer(config[i], config[i+1]))
-    distance_from_plasma: float = config[-1]
+    outer_radius: float = FileReader("stok_config.txt").read[0]
+    containment_height: float = FileReader("stok_config.txt").read[1]
+    nr_layers: int = int(FileReader("stok_config.txt").read[2])
+    distance_from_plasma: float = FileReader("stok_config.txt").read[-1]
+    layers: Tuple = field(default=layers_all())
 
 @dataclass(order=True, frozen=True)
 class SolenoidParameters:
@@ -74,13 +87,9 @@ class SolenoidParameters:
         solenoid_radius: float
         solenoid_height: float
     """
-    solenoid_start: int = field(default=ContainmentParameters.nr_layers*2+3,
-                                compare=False, hash=False, repr=False)
-    solenoid: List[float] = field(default=FileReader("stok_config.txt").reader(),
-                                  compare=False, hash=False, repr=False)
-    solenoid_radius: float = solenoid[solenoid_start]
-    solenoid_height: float = solenoid[solenoid_start+1]
-    bbox_thickness: float = solenoid[solenoid_start+2]
+    solenoid_radius: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+3]
+    solenoid_height: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+4]
+    bbox_thickness: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+5]
 
 @dataclass(order=True, frozen=True)
 class PortParameters:
@@ -91,13 +100,9 @@ class PortParameters:
         z_side: float
         y_side: float
     """
-    port_start: int = field(default=SolenoidParameters.solenoid_start+3,
-                            compare=False, hash=False, repr=False)
-    eq_port: List[float] = field(default=FileReader("stok_config.txt").reader(),
-                                 compare=False, hash=False, repr=False)
-    nr_ports: int = int(eq_port[port_start])
-    z_side: float = eq_port[port_start+1]
-    y_side: float = eq_port[port_start+2]
+    nr_ports: int = int(FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+6])
+    z_side: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+7]
+    y_side: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+8]
 
 @dataclass(order=True, frozen=True)
 class LimbDimensiones:
@@ -121,15 +126,14 @@ class LimbParameters:
         limb_radius: float -> at what radius the limbs are placed.
         sphere_radius: float -> the radius of the spheres next to the limb.
     """
-    limb_start: int = field(default=PortParameters.port_start+3,
-                            compare=False, hash=False, repr=False)
-    limbs: List[float] = field(default=FileReader("stok_config.txt").reader(),
-                               compare=False, hash=False, repr=False)
-    nr_limbs: int = int(limbs[limb_start])
-    limb_radius: float = ContainmentParameters.outer_radius + limbs[limb_start+1]
-    sphere_radius: float = limbs[limb_start+2]
+    nr_limbs: int = int(FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+9])
+    limb_radius: float = ContainmentParameters.outer_radius + \
+        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+10]
+    sphere_radius: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+11]
     limb_dimensions: LimbDimensiones = LimbDimensiones(
-        limbs[limb_start+3], limbs[limb_start+4], limbs[limb_start+5])
+        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+12],
+        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+13],
+        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+14])
 
 @dataclass(order=True, frozen=True)
 class LimiterParameters:
@@ -140,13 +144,11 @@ class LimiterParameters:
         limiter_gap: float
         limiter_thickness: float
     """
-    limiter_start: int = field(default=LimbParameters.limb_start+6,
-                               compare=False, hash=False, repr=False)
-    limiter: List[float] = field(default=FileReader("stok_config.txt").reader(),
-                                 compare=False, hash=False, repr=False)
-    firstwall_thickness: float = limiter[limiter_start]
-    limiter_gap: float = limiter[limiter_start+1]
-    limiter_thickness: float = limiter[limiter_start+2]
+    firstwall_thickness: float = FileReader("stok_config.txt").\
+        read[ContainmentParameters.nr_layers*2+15]
+    limiter_gap: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+16]
+    limiter_thickness: float = FileReader("stok_config.txt").\
+        read[ContainmentParameters.nr_layers*2+17]
 
 @dataclass(order=True, frozen=True)
 class DivertorParameters:
@@ -158,15 +160,13 @@ class DivertorParameters:
         divertor_firstwall_thickness: float
         TODO divertor_shape: float
     """
-    divertor_start: int = field(default=LimiterParameters.limiter_start+3,
-                                compare=False, hash=False, repr=False)
-    divertor: List[float] = field(default=FileReader("stok_config.txt").reader(),
-                                  compare=False, hash=False, repr=False)
-    divertor_thickness: float = divertor[divertor_start+3]
-    divertor_width: float = divertor[divertor_start+1]
-    divertor_gap: float = divertor[divertor_start+2]
-    divertor_firstwall_thickness: float = divertor[divertor_start]
-    divertor_shape: float = divertor[divertor_start+4]
+    divertor_thickness: float = FileReader("stok_config.txt").\
+        read[ContainmentParameters.nr_layers*2+18]
+    divertor_width: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+19]
+    divertor_gap: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+20]
+    divertor_firstwall_thickness: float = FileReader("stok_config.txt").\
+        read[ContainmentParameters.nr_layers*2+21]
+    divertor_shape: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+22]
 
 class STOK():
     """The class containing all construction components."""
@@ -213,7 +213,7 @@ class STOK():
 
         # We position it in the correct place.
         opening = opening.\
-            translate(Vector(-ContainmentParameters.outer_radius-extrusion_depth*0.1, 0, 0))
+            translate(Vector((-1)*ContainmentParameters.outer_radius-extrusion_depth*0.1, 0, 0))
 
         return opening
 
@@ -324,7 +324,7 @@ class STOK():
 
         return containment
 
-    def transformer_limbs(self):
+    def transformer_limbs(self) -> cq.Workplane:
         """This method constructs the transformer limbs using the parameters
         defined in the LimbParameter class.
 
@@ -352,6 +352,7 @@ class STOK():
         transformer_limbs = transformer_limbs.rotate((0, 0, 1), (0, 0, -1), 22.5)
 
         return transformer_limbs
+
     def limiter_firstwall_openings(self):
         """Creates the full array of port cutting components
         with the gap thickness parameter.
@@ -459,12 +460,14 @@ class STOK():
         sphere_right = cq.Workplane("XY").\
             sphere(LimbParameters.sphere_radius).\
             translate(
-                Vector(LimbParameters.limb_radius, LimbParameters.sphere_radius +
+                Vector(LimbParameters.limb_radius +
+                       ContainmentParameters.outer_radius, LimbParameters.sphere_radius +
                        LimbParameters.limb_dimensions.limb_width/2))
         sphere_left = cq.Workplane("XY").\
             sphere(LimbParameters.sphere_radius).\
             translate(
-                Vector(LimbParameters.limb_radius, -LimbParameters.sphere_radius -
+                Vector(LimbParameters.limb_radius +
+                       ContainmentParameters.outer_radius, -LimbParameters.sphere_radius -
                        LimbParameters.limb_dimensions.limb_width/2))
 
         return sphere_right, sphere_left
@@ -559,10 +562,11 @@ class STOK():
     def export_stl(self, the_solid: str,
                    max_triangle_size: float,
                    filename: str) -> None:
-        """Exports a component as an stl file.
+        """Exports a step file as an stl file.
 
         Args:
-            the_solid (cq.Workplane): the component to be exported.
+            the_solid (str): the step file to be exported.
+            max_triangle_size (float): the maximum size of the side of a triangle.
             filename (str): the name of the file.
         """
         cpus = cpu_count()
