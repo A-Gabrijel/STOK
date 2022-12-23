@@ -133,7 +133,9 @@ class LimbParameters:
     limb_dimensions: LimbDimensiones = LimbDimensiones(
         FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+12],
         FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+13],
-        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+14])
+        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+14]
+            if FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+14] != 0.0
+            else SolenoidParameters.solenoid_height)
 
 @dataclass(order=True, frozen=True)
 class LimiterParameters:
