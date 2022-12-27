@@ -35,6 +35,7 @@ class FileReader:
                     output.append(float(line))
         return output
 
+
 @dataclass(order=True, frozen=True)
 class Layer:
     """Layer class, used to store the data for each layer.
@@ -45,6 +46,7 @@ class Layer:
     """
     upper_lower_outer: float
     inner: float
+
 
 def layers_all() -> Tuple:
     """Returns a list of Layer objects.
@@ -61,6 +63,7 @@ def layers_all() -> Tuple:
         output.append(Layer(FileReader("stok_config.txt").read[i],
                             FileReader("stok_config.txt").read[i+1]))
     return tuple(output)
+
 
 @dataclass(order=True, frozen=True)
 class ContainmentParameters:
@@ -79,6 +82,7 @@ class ContainmentParameters:
     distance_from_plasma: float = FileReader("stok_config.txt").read[-1]
     layers: Tuple = field(default=layers_all())
 
+
 @dataclass(order=True, frozen=True)
 class SolenoidParameters:
     """Class that contains the parameters for the solenoid.
@@ -87,9 +91,13 @@ class SolenoidParameters:
         solenoid_radius: float
         solenoid_height: float
     """
-    solenoid_radius: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+3]
-    solenoid_height: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+4]
-    bbox_thickness: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+5]
+    solenoid_radius: float = FileReader(
+        "stok_config.txt").read[ContainmentParameters.nr_layers*2+3]
+    solenoid_height: float = FileReader(
+        "stok_config.txt").read[ContainmentParameters.nr_layers*2+4]
+    bbox_thickness: float = FileReader(
+        "stok_config.txt").read[ContainmentParameters.nr_layers*2+5]
+
 
 @dataclass(order=True, frozen=True)
 class PortParameters:
@@ -100,9 +108,13 @@ class PortParameters:
         z_side: float
         y_side: float
     """
-    nr_ports: int = int(FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+6])
-    z_side: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+7]
-    y_side: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+8]
+    nr_ports: int = int(FileReader(
+        "stok_config.txt").read[ContainmentParameters.nr_layers*2+6])
+    z_side: float = FileReader(
+        "stok_config.txt").read[ContainmentParameters.nr_layers*2+7]
+    y_side: float = FileReader(
+        "stok_config.txt").read[ContainmentParameters.nr_layers*2+8]
+
 
 @dataclass(order=True, frozen=True)
 class LimbDimensiones:
@@ -117,6 +129,7 @@ class LimbDimensiones:
     limb_width: float
     limb_height: float
 
+
 @dataclass(order=True, frozen=True)
 class LimbParameters:
     """Class that contains the parameters for the limbs.
@@ -126,16 +139,23 @@ class LimbParameters:
         limb_radius: float -> at what radius the limbs are placed.
         sphere_radius: float -> the radius of the spheres next to the limb.
     """
-    nr_limbs: int = int(FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+9])
+    nr_limbs: int = int(FileReader(
+        "stok_config.txt").read[ContainmentParameters.nr_layers*2+9])
     limb_radius: float = ContainmentParameters.outer_radius + \
-        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+10]
-    sphere_radius: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+11]
+        FileReader(
+            "stok_config.txt").read[ContainmentParameters.nr_layers*2+10]
+    sphere_radius: float = FileReader(
+        "stok_config.txt").read[ContainmentParameters.nr_layers*2+11]
     limb_dimensions: LimbDimensiones = LimbDimensiones(
-        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+12],
-        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+13],
-        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+14]
-            if FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+14] != 0.0
-            else SolenoidParameters.solenoid_height)
+        FileReader(
+            "stok_config.txt").read[ContainmentParameters.nr_layers*2+12],
+        FileReader(
+            "stok_config.txt").read[ContainmentParameters.nr_layers*2+13],
+        FileReader(
+            "stok_config.txt").read[ContainmentParameters.nr_layers*2+14]
+        if FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+14] != 0.0
+        else SolenoidParameters.solenoid_height)
+
 
 @dataclass(order=True, frozen=True)
 class LimiterParameters:
@@ -148,9 +168,11 @@ class LimiterParameters:
     """
     firstwall_thickness: float = FileReader("stok_config.txt").\
         read[ContainmentParameters.nr_layers*2+15]
-    limiter_gap: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+16]
+    limiter_gap: float = FileReader(
+        "stok_config.txt").read[ContainmentParameters.nr_layers*2+16]
     limiter_thickness: float = FileReader("stok_config.txt").\
         read[ContainmentParameters.nr_layers*2+17]
+
 
 @dataclass(order=True, frozen=True)
 class DivertorParameters:
@@ -164,14 +186,34 @@ class DivertorParameters:
     """
     divertor_thickness: float = FileReader("stok_config.txt").\
         read[ContainmentParameters.nr_layers*2+18]
-    divertor_width: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+19]
-    divertor_gap: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+20]
+    divertor_width: float = FileReader(
+        "stok_config.txt").read[ContainmentParameters.nr_layers*2+19]
+    divertor_gap: float = FileReader(
+        "stok_config.txt").read[ContainmentParameters.nr_layers*2+20]
     divertor_firstwall_thickness: float = FileReader("stok_config.txt").\
         read[ContainmentParameters.nr_layers*2+21]
-    divertor_shape: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+22]
+    divertor_shape: float = FileReader(
+        "stok_config.txt").read[ContainmentParameters.nr_layers*2+22]
+
 
 class STOK():
     """The class containing all construction components."""
+
+    def __init__(self, param_tup: Tuple) -> None:
+        type_tuple = list(map(type, param_tup))
+        if type_tuple == [ContainmentParameters, SolenoidParameters, PortParameters,
+                          LimbParameters, LimiterParameters, DivertorParameters]:
+            self.containment_parameters = param_tup[0]
+            self.solenoid_parameters = param_tup[1]
+            self.port_parameters = param_tup[2]
+            self.limb_parameters = param_tup[3]
+            self.limiter_parameters = param_tup[4]
+            self.divertor_parameters = param_tup[5]
+        else:
+            raise TypeError("Wrong input types, expected type ContainmentParameters,\
+                SolenoidParameters, PortParameters, LimbParameters,\
+                LimiterParameters, DivertorParameters in that order.")
+
     def central_solenoid(self) -> cq.Workplane:
         """Creates the central solenoid, its parameters
         are controlled by the SolenoidParameters class.
@@ -181,9 +223,9 @@ class STOK():
         """
 
         solenoid: cq.Workplane = cq.Workplane("YX").\
-            circle(SolenoidParameters.solenoid_radius).\
-            extrude(SolenoidParameters.solenoid_height).\
-            translate(Vector(0, 0, SolenoidParameters.solenoid_height/2))
+            circle(self.solenoid_parameters.solenoid_radius).\
+            extrude(self.solenoid_parameters.solenoid_height).\
+            translate(Vector(0, 0, self.solenoid_parameters.solenoid_height/2))
         return solenoid
 
     def opening(self, gap: float) -> cq.Workplane:
@@ -200,22 +242,24 @@ class STOK():
 
         # First the opening geometry is created.
         opening: cq.Workplane = cq.Workplane("YZ").\
-            rect(PortParameters.y_side-gap, PortParameters.z_side-gap)
+            rect(self.port_parameters.y_side-gap,
+                 self.port_parameters.z_side-gap)
 
         # Then the opening extrusion depth is calculated and
         # the port is extruded.
         extrusion_depth: float = 0.0
 
-        for i in range(ContainmentParameters.nr_layers):
+        for i in range(self.containment_parameters.nr_layers):
             extrusion_depth = extrusion_depth +\
-                ContainmentParameters.layers[i].upper_lower_outer
+                self.containment_parameters.layers[i].upper_lower_outer
 
         # We extrude.
         opening = opening.extrude(extrusion_depth+extrusion_depth*0.5)
 
         # We position it in the correct place.
         opening = opening.\
-            translate(Vector((-1)*ContainmentParameters.outer_radius-extrusion_depth*0.1, 0, 0))
+            translate(Vector((-1)*self.containment_parameters.
+                             outer_radius-extrusion_depth*0.1, 0, 0))
 
         return opening
 
@@ -231,9 +275,10 @@ class STOK():
         # into position. Gap is 0 because there is no gap.
         openings = self.opening(gap=0)
 
-        for i in range(1, PortParameters.nr_ports):
-            openings = openings.union(self.opening(gap=0).\
-                rotate((0, 0, 1),(0, 0, -1), i*360/PortParameters.nr_ports))
+        for i in range(1, self.port_parameters.nr_ports):
+            openings = openings.\
+                union(self.opening(gap=0).
+                      rotate((0, 0, 1), (0, 0, -1), i*360/self.port_parameters.nr_ports))
 
         return openings
 
@@ -270,29 +315,35 @@ class STOK():
         """
         # Creating a containment layer from a smaller and a bigger
         # tourus.
-        inner_r: float = SolenoidParameters.solenoid_radius
-        outer_r: float = ContainmentParameters.outer_radius
-        height: float = ContainmentParameters.containment_height
+        inner_r: float = self.solenoid_parameters.solenoid_radius
+        outer_r: float = self.containment_parameters.outer_radius
+        height: float = self.containment_parameters.containment_height
         # If we are at layer 0 we use the base parameters of inner and outer radius
         # if not then we use the other ones.
         if layer_nr == 0:
             bigger_tourus: cq.Workplane = self.create_torus(
                 inner_r=inner_r, outer_r=outer_r, height=height)
             smaller_torus: cq.Workplane = self.create_torus(
-                inner_r=inner_r+ContainmentParameters.layers[layer_nr].inner,
-                outer_r=outer_r-ContainmentParameters.layers[layer_nr].upper_lower_outer,
-                height=height-ContainmentParameters.layers[layer_nr].upper_lower_outer*2)
+                inner_r=inner_r +
+                self.containment_parameters.layers[layer_nr].inner,
+                outer_r=outer_r -
+                self.containment_parameters.layers[layer_nr].upper_lower_outer,
+                height=height-self.containment_parameters.layers[layer_nr].upper_lower_outer*2)
         else:
             for i in range(layer_nr):
-                inner_r = inner_r + ContainmentParameters.layers[i].inner
-                outer_r = outer_r - ContainmentParameters.layers[i].upper_lower_outer
-                height = height - ContainmentParameters.layers[i].upper_lower_outer*2
+                inner_r = inner_r + self.containment_parameters.layers[i].inner
+                outer_r = outer_r - \
+                    self.containment_parameters.layers[i].upper_lower_outer
+                height = height - \
+                    self.containment_parameters.layers[i].upper_lower_outer*2
             bigger_tourus = self.create_torus(
                 inner_r=inner_r, outer_r=outer_r, height=height)
             smaller_torus = self.create_torus(
-                inner_r=inner_r+ContainmentParameters.layers[layer_nr].inner,
-                outer_r=outer_r-ContainmentParameters.layers[layer_nr].upper_lower_outer,
-                height=height-ContainmentParameters.layers[layer_nr].upper_lower_outer*2)
+                inner_r=inner_r +
+                self.containment_parameters.layers[layer_nr].inner,
+                outer_r=outer_r -
+                self.containment_parameters.layers[layer_nr].upper_lower_outer,
+                height=height-self.containment_parameters.layers[layer_nr].upper_lower_outer*2)
         # Here we cut the smaller torus from the bigger one, creating our containment layer.
         containment: cq.Workplane = bigger_tourus.cut(smaller_torus)
 
@@ -307,7 +358,7 @@ class STOK():
         """
 
         containment: List[cq.Workplane] = []
-        for i in range(ContainmentParameters.nr_layers):
+        for i in range(self.containment_parameters.nr_layers):
             containment.append(self.containment_layer(i))
 
         return containment
@@ -321,8 +372,38 @@ class STOK():
             List (cq.Workplane): the containment layer list.
         """
         containment: List[cq.Workplane] = []
-        for i in range(ContainmentParameters.nr_layers):
+        for i in range(self.containment_parameters.nr_layers):
             containment.append(self.containment_layer(i).cut(self.openings()))
+
+        return containment
+
+    def containment_with_divertor(self) -> List[cq.Workplane]:
+        """Creates the containment layer array with divertor openings its parameters
+        are controlled via the ContaimentParameters class and the PortParameters
+        class.
+
+        Returns:
+            List (cq.Workplane): the containment layer list.
+        """
+        containment: List[cq.Workplane] = []
+        for i in range(self.containment_parameters.nr_layers):
+            containment.append(self.containment_layer(
+                i).cut(self.divertor_cutter()))
+
+        return containment
+
+    def containment_with_divertor_and_ports(self) -> List[cq.Workplane]:
+        """Creates the containment layer array with divertor and port openings its parameters
+        are controlled via the ContaimentParameters class and the PortParameters
+        class.
+
+        Returns:
+            List (cq.Workplane): the containment layer list.
+        """
+        containment: List[cq.Workplane] = []
+        for i in range(self.containment_parameters.nr_layers):
+            containment.append(self.containment_layer(i).
+                               cut(self.openings()).cut(self.divertor_cutter()))
 
         return containment
 
@@ -336,22 +417,24 @@ class STOK():
 
         # First we create a box with the correct dimensions.
         box: cq.Workplane = cq.Workplane("XY").box(
-            LimbParameters.limb_dimensions.limb_length,
-            LimbParameters.limb_dimensions.limb_width,
-            LimbParameters.limb_dimensions.limb_height)
+            self.limb_parameters.limb_dimensions.limb_length,
+            self.limb_parameters.limb_dimensions.limb_width,
+            self.limb_parameters.limb_dimensions.limb_height)
 
         # Then we moove the box to the correct position.
         box = box.translate(
-            Vector(LimbParameters.limb_radius+ContainmentParameters.outer_radius,0,0))
+            Vector(self.limb_parameters.limb_radius+self.containment_parameters.outer_radius, 0, 0))
 
         # And we construct the full limb union.
         transformer_limbs: cq.Workplane = box
-        for i in range(1, LimbParameters.nr_limbs):
+        for i in range(1, self.limb_parameters.nr_limbs):
             transformer_limbs = transformer_limbs.\
-                union(box.rotate((0, 0, 0), (0, 0, 1), 360/LimbParameters.nr_limbs*i))
+                union(box.rotate((0, 0, 0), (0, 0, 1),
+                      360/self.limb_parameters.nr_limbs*i))
 
         # Apply the 22.5 deg offset from the limbs.
-        transformer_limbs = transformer_limbs.rotate((0, 0, 1), (0, 0, -1), 22.5)
+        transformer_limbs = transformer_limbs.rotate(
+            (0, 0, 1), (0, 0, -1), 22.5)
 
         return transformer_limbs
 
@@ -366,17 +449,18 @@ class STOK():
         # Here we call the opening_member function to create a single
         # opening cutter and then rotate it via the Z axis to achieve
         # the port.
-        openings = self.opening(gap=LimiterParameters.limiter_gap)
+        openings = self.opening(gap=self.limiter_parameters.limiter_gap)
 
-        for i in range(1, PortParameters.nr_ports):
-            openings = openings.union(self.opening(gap=LimiterParameters.limiter_gap).\
-                rotate((0, 0, 1),(0, 0, -1), i*360/PortParameters.nr_ports))
+        for i in range(1, self.port_parameters.nr_ports):
+            openings = openings.\
+                union(self.opening(gap=self.limiter_parameters.limiter_gap).
+                      rotate((0, 0, 1), (0, 0, -1), i*360/self.port_parameters.nr_ports))
 
         return openings
 
     def limiter_firstwall(self) -> cq.Workplane:
         """A function that creates the firstwall limiter set parameters are
-        controlled via the LimiterParameters class.
+        controlled via the self.limiter_parameters class.
 
         Returns:
             cadquery.cq.Workplane: the firstwall.
@@ -384,15 +468,17 @@ class STOK():
 
         # First we calculate the position of the firstwall of the cont.
         outer_sum = 0.0
-        for i in range(ContainmentParameters.nr_layers):
-            outer_sum = outer_sum + ContainmentParameters.layers[i].upper_lower_outer
+        for i in range(self.containment_parameters.nr_layers):
+            outer_sum = outer_sum + \
+                self.containment_parameters.layers[i].upper_lower_outer
         firstwall_torus: cq.Workplane = self.create_torus(
-            inner_r=ContainmentParameters.outer_radius-outer_sum,
-            outer_r=ContainmentParameters.outer_radius-outer_sum+\
-                LimiterParameters.firstwall_thickness,
-            height=SolenoidParameters.solenoid_height)
+            inner_r=self.containment_parameters.outer_radius-outer_sum,
+            outer_r=self.containment_parameters.outer_radius-outer_sum +
+            self.limiter_parameters.firstwall_thickness,
+            height=self.solenoid_parameters.solenoid_height)
         # Then we create the firstwall pieces and intersect them with the torus.
-        firstwall = firstwall_torus.intersect(self.limiter_firstwall_openings())
+        firstwall = firstwall_torus.intersect(
+            self.limiter_firstwall_openings())
 
         return firstwall
 
@@ -406,14 +492,16 @@ class STOK():
 
         # First we create a box with the correct dimensions.
         outer_sum = 0.0
-        for i in range(ContainmentParameters.nr_layers):
-            outer_sum = outer_sum + ContainmentParameters.layers[i].upper_lower_outer
+        for i in range(self.containment_parameters.nr_layers):
+            outer_sum = outer_sum + \
+                self.containment_parameters.layers[i].upper_lower_outer
         firstwall_torus: cq.Workplane = self.create_torus(
-            inner_r=ContainmentParameters.outer_radius-outer_sum+\
-                LimiterParameters.firstwall_thickness,
-            outer_r=ContainmentParameters.outer_radius-outer_sum+\
-                LimiterParameters.limiter_thickness+LimiterParameters.firstwall_thickness,
-            height=SolenoidParameters.solenoid_height)
+            inner_r=self.containment_parameters.outer_radius-outer_sum +
+            self.limiter_parameters.firstwall_thickness,
+            outer_r=self.containment_parameters.outer_radius-outer_sum +
+            self.limiter_parameters.limiter_thickness +
+            self.limiter_parameters.firstwall_thickness,
+            height=self.solenoid_parameters.solenoid_height)
         # Then we create the firstwall pieces and intersect them with the torus.
         backwall = firstwall_torus.intersect(self.limiter_firstwall_openings())
 
@@ -428,20 +516,20 @@ class STOK():
         """
 
         bounding_box_outer = cq.Workplane("XY").\
-            box(LimbParameters.limb_radius +
-                ContainmentParameters.outer_radius * 8 +
-                SolenoidParameters.bbox_thickness,
-                LimbParameters.limb_radius +
-                ContainmentParameters.outer_radius * 8 +
-                SolenoidParameters.bbox_thickness,
-                SolenoidParameters.solenoid_height * 4 +
-                SolenoidParameters.bbox_thickness)
+            box(self.limb_parameters.limb_radius +
+                self.containment_parameters.outer_radius * 8 +
+                self.solenoid_parameters.bbox_thickness,
+                self.limb_parameters.limb_radius +
+                self.containment_parameters.outer_radius * 8 +
+                self.solenoid_parameters.bbox_thickness,
+                self.solenoid_parameters.solenoid_height * 4 +
+                self.solenoid_parameters.bbox_thickness)
         bounding_box_inner = cq.Workplane("XY").\
-            box(LimbParameters.limb_radius +
-                ContainmentParameters.outer_radius * 8,
-                LimbParameters.limb_radius +
-                ContainmentParameters.outer_radius * 8,
-                SolenoidParameters.solenoid_height * 4)
+            box(self.limb_parameters.limb_radius +
+                self.containment_parameters.outer_radius * 8,
+                self.limb_parameters.limb_radius +
+                self.containment_parameters.outer_radius * 8,
+                self.solenoid_parameters.solenoid_height * 4)
 
         bounding_box = bounding_box_outer.cut(bounding_box_inner)
 
@@ -460,17 +548,19 @@ class STOK():
         """
 
         sphere_right = cq.Workplane("XY").\
-            sphere(LimbParameters.sphere_radius).\
+            sphere(self.limb_parameters.sphere_radius).\
             translate(
-                Vector(LimbParameters.limb_radius +
-                       ContainmentParameters.outer_radius, LimbParameters.sphere_radius +
-                       LimbParameters.limb_dimensions.limb_width/2))
+                Vector(self.limb_parameters.limb_radius +
+                       self.containment_parameters.outer_radius,
+                       self.limb_parameters.sphere_radius +
+                       self.limb_parameters.limb_dimensions.limb_width/2))
         sphere_left = cq.Workplane("XY").\
-            sphere(LimbParameters.sphere_radius).\
+            sphere(self.limb_parameters.sphere_radius).\
             translate(
-                Vector(LimbParameters.limb_radius +
-                       ContainmentParameters.outer_radius, -LimbParameters.sphere_radius -
-                       LimbParameters.limb_dimensions.limb_width/2))
+                Vector(self.limb_parameters.limb_radius +
+                       self.containment_parameters.outer_radius,
+                       -self.limb_parameters.sphere_radius -
+                       self.limb_parameters.limb_dimensions.limb_width/2))
 
         return sphere_right, sphere_left
 
@@ -482,11 +572,13 @@ class STOK():
         """
 
         sphere_pair_array: List[List[cq.Workplane]] = []
-        for i in range(LimbParameters.nr_limbs):
+        for i in range(self.limb_parameters.nr_limbs):
             sphere_pair_array.append([
-                self.sphere_pair()[0].rotate((0,0,1),(0,0,-1),i*360/LimbParameters.nr_limbs + 22.5),
-                self.sphere_pair()[1].rotate((0,0,1),(0,0,-1),i*360/LimbParameters.nr_limbs + 22.5)
-                ])
+                self.sphere_pair()[0].rotate((0, 0, 1), (0, 0, -1),
+                                             i*360/self.limb_parameters.nr_limbs + 22.5),
+                self.sphere_pair()[1].rotate((0, 0, 1), (0, 0, -1),
+                                             i*360/self.limb_parameters.nr_limbs + 22.5)
+            ])
 
         return sphere_pair_array
 
@@ -502,64 +594,113 @@ class STOK():
             cadquery.cq.Workplane: the plasma source.
         """
 
-        inner_r: float = SolenoidParameters.solenoid_radius
-        outer_r: float = ContainmentParameters.outer_radius
-        height: float = ContainmentParameters.containment_height
+        inner_r: float = self.solenoid_parameters.solenoid_radius
+        outer_r: float = self.containment_parameters.outer_radius
+        height: float = self.containment_parameters.containment_height
 
-        for i in range(ContainmentParameters.nr_layers):
-            inner_r = inner_r + ContainmentParameters.layers[i].inner
-            outer_r = outer_r - ContainmentParameters.layers[i].upper_lower_outer
-            height = height - ContainmentParameters.layers[i].upper_lower_outer*2
+        for i in range(self.containment_parameters.nr_layers):
+            inner_r = inner_r + self.containment_parameters.layers[i].inner
+            outer_r = outer_r - \
+                self.containment_parameters.layers[i].upper_lower_outer
+            height = height - \
+                self.containment_parameters.layers[i].upper_lower_outer*2
         smaller_torus = self.create_torus(
-            inner_r=inner_r+ContainmentParameters.layers[-1].\
-                inner+ContainmentParameters.distance_from_plasma,
-            outer_r=outer_r-ContainmentParameters.layers[-1].\
-                upper_lower_outer-ContainmentParameters.distance_from_plasma,
-            height=height-ContainmentParameters.layers[-1].\
-                upper_lower_outer*2-ContainmentParameters.distance_from_plasma*2)
+            inner_r=inner_r+self.containment_parameters.layers[-1].
+            inner+self.containment_parameters.distance_from_plasma,
+            outer_r=outer_r-self.containment_parameters.layers[-1].
+            upper_lower_outer-self.containment_parameters.distance_from_plasma,
+            height=height-self.containment_parameters.layers[-1].
+            upper_lower_outer*2-self.containment_parameters.distance_from_plasma*2)
 
         return smaller_torus
 
-    def divertor_cutter(self) -> cq.Workplane:
-        """Creates the divertor component its parameters are contained in the DivertorParameters
-        class.
+    def centering_of_divertor(self) -> Tuple[float, float]:
+        """The outer and inner radius for the positioning of
+        the divertor are calculated.
 
         Returns:
-            cq.Workplane: The component.
+            Tuple[float, float]: the inner and outer radius.
         """
 
         inner_sum: float = 0.0
         outer_sum: float = 0.0
         # First we calculate the summ of all thicknesess for the inner and outer radius.
-        for i in range(ContainmentParameters.nr_layers):
-            inner_sum = inner_sum + ContainmentParameters.layers[i].inner
-            outer_sum = outer_sum + ContainmentParameters.layers[i].upper_lower_outer
+        for i in range(self.containment_parameters.nr_layers):
+            inner_sum = inner_sum + self.containment_parameters.layers[i].inner
+            outer_sum = outer_sum + \
+                self.containment_parameters.layers[i].upper_lower_outer
         # Then we add the radius of the containment to each
-        inner_sum = inner_sum + SolenoidParameters.solenoid_radius
-        outer_sum = outer_sum + ContainmentParameters.outer_radius
+        inner_sum = inner_sum + self.solenoid_parameters.solenoid_radius
+        outer_sum = self.containment_parameters.outer_radius - outer_sum
+
+        return inner_sum, outer_sum
+
+    def divertor_cutter(self) -> cq.Workplane:
+        """Creates the containment cuting component for divertor placement,
+        its parameters are contained in the DivertorParameters class.
+
+        Returns:
+            cq.Workplane: The component.
+        """
+
+        inner_sum, outer_sum = self.centering_of_divertor()
         center_point = (inner_sum + outer_sum)/2
         # Now that we have the inner and outer radius we have the position of the divertor
         # and we can create a torus that cuts the containment layers.
-        cutter_torus = self.create_torus(center_point-DivertorParameters.divertor_thickness/2,
-                                         center_point+DivertorParameters.divertor_thickness/2,
-                                         SolenoidParameters.solenoid_height).\
-                       translate(Vector(0,0,-SolenoidParameters.solenoid_height/2))
+        cutter_torus = self.create_torus(center_point-self.divertor_parameters.divertor_width/2,
+                                         center_point+self.divertor_parameters.divertor_width/2,
+                                         self.solenoid_parameters.solenoid_height).\
+            translate(Vector(0, 0, -self.solenoid_parameters.solenoid_height/2))
 
         return cutter_torus
 
-    def divertor_firstwall(self):
-        # TODO: finish this function.
+    def divertor_firstwall(self) -> cq.Workplane:
         """The firstwall of the divertor - i.e. the plasma facing component.
 
         Returns:
             cq.Workplane: The component.
         """
 
-        return 0
+        # We start by creating a torus that is the thickness of the firstwall and
+        # has the calculated inner and outer radius. This is the same as in the divertor_cutter.
+        inner_sum, outer_sum = self.centering_of_divertor()
+        center_point = (inner_sum + outer_sum)/2
+        # Now that we have our center point, we can create the torus, that is the firstwall.
+        firstwall_torus = self.create_torus(center_point-self.divertor_parameters.divertor_width +
+                                            self.divertor_parameters.divertor_gap,
+                                            center_point+self.divertor_parameters.divertor_width -
+                                            self.divertor_parameters.divertor_gap,
+                                            self.divertor_parameters.divertor_firstwall_thickness).\
+            translate(Vector(0, 0,
+                             -self.divertor_parameters.divertor_firstwall_thickness -
+                             self.containment_parameters.containment_height/2))
 
-    def divertor_backwall(self):
-        # TODO: finish this function.
-        pass
+        return firstwall_torus
+
+    def divertor_backwall(self) -> cq.Workplane:
+        """The backwall of the divertor - i.e. the component behind the
+        plasma facing component.
+
+        Returns:
+            cq.Workplane: The component.
+        """
+
+        # We start by creating a torus that is the thickness of the backwall and
+        # has the calculated inner and outer radius. This is the same as in the divertor_cutter.
+        inner_sum, outer_sum = self.centering_of_divertor()
+        center_point = (inner_sum + outer_sum)/2
+        # Now that we have our center point, we can create the torus, that is the backwall.
+        backwall_torus = self.create_torus(center_point-self.divertor_parameters.divertor_width +
+                                           self.divertor_parameters.divertor_gap/2,
+                                           center_point+self.divertor_parameters.divertor_width -
+                                           self.divertor_parameters.divertor_gap/2,
+                                           self.divertor_parameters.divertor_thickness).\
+            translate(Vector(0, 0,
+                             -self.divertor_parameters.divertor_thickness -
+                             self.divertor_parameters.divertor_firstwall_thickness -
+                             self.containment_parameters.containment_height/2))
+
+        return backwall_torus
 
     def export_stl(self, the_solid: str,
                    max_triangle_size: float,
