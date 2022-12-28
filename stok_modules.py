@@ -184,16 +184,16 @@ class DivertorParameters:
         divertor_firstwall_thickness: float
         TODO divertor_shape: float
     """
-    divertor_thickness: float = FileReader("stok_config.txt").\
+    divertor_firstwall_thickness: float = FileReader("stok_config.txt").\
         read[ContainmentParameters.nr_layers*2+18]
     divertor_width: float = FileReader(
         "stok_config.txt").read[ContainmentParameters.nr_layers*2+19]
     divertor_gap: float = FileReader(
         "stok_config.txt").read[ContainmentParameters.nr_layers*2+20]
-    divertor_firstwall_thickness: float = FileReader("stok_config.txt").\
+    divertor_thickness: float = FileReader("stok_config.txt").\
         read[ContainmentParameters.nr_layers*2+21]
-    divertor_shape: float = FileReader(
-        "stok_config.txt").read[ContainmentParameters.nr_layers*2+22]
+    # divertor_shape: float = FileReader( TODO: add shape to divertor.
+    #     "stok_config.txt").read[ContainmentParameters.nr_layers*2+22]
 
 
 class STOK():
@@ -647,8 +647,8 @@ class STOK():
         center_point = (inner_sum + outer_sum)/2
         # Now that we have the inner and outer radius we have the position of the divertor
         # and we can create a torus that cuts the containment layers.
-        cutter_torus = self.create_torus(center_point-self.divertor_parameters.divertor_width/2,
-                                         center_point+self.divertor_parameters.divertor_width/2,
+        cutter_torus = self.create_torus(center_point-self.divertor_parameters.divertor_width,
+                                         center_point+self.divertor_parameters.divertor_width,
                                          self.solenoid_parameters.solenoid_height).\
             translate(Vector(0, 0, -self.solenoid_parameters.solenoid_height/2))
 
@@ -672,8 +672,9 @@ class STOK():
                                             self.divertor_parameters.divertor_gap,
                                             self.divertor_parameters.divertor_firstwall_thickness).\
             translate(Vector(0, 0,
-                             -self.divertor_parameters.divertor_firstwall_thickness -
-                             self.containment_parameters.containment_height/2))
+                             -self.divertor_parameters.divertor_firstwall_thickness/2 -
+                             self.containment_parameters.containment_height/2 - outer_sum +
+                             self.containment_parameters.outer_radius))
 
         return firstwall_torus
 
@@ -691,14 +692,15 @@ class STOK():
         center_point = (inner_sum + outer_sum)/2
         # Now that we have our center point, we can create the torus, that is the backwall.
         backwall_torus = self.create_torus(center_point-self.divertor_parameters.divertor_width +
-                                           self.divertor_parameters.divertor_gap/2,
+                                           self.divertor_parameters.divertor_gap,
                                            center_point+self.divertor_parameters.divertor_width -
-                                           self.divertor_parameters.divertor_gap/2,
+                                           self.divertor_parameters.divertor_gap,
                                            self.divertor_parameters.divertor_thickness).\
             translate(Vector(0, 0,
-                             -self.divertor_parameters.divertor_thickness -
+                             -self.divertor_parameters.divertor_thickness/2 -
                              self.divertor_parameters.divertor_firstwall_thickness -
-                             self.containment_parameters.containment_height/2))
+                             self.containment_parameters.containment_height/2 - outer_sum +
+                             self.containment_parameters.outer_radius))
 
         return backwall_torus
 
