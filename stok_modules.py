@@ -707,6 +707,7 @@ class STOK():
     def export_stl(self, the_solid: str,
                    max_triangle_size: float,
                    filename: str) -> None:
+        # TODO: gmsh/model/occ/importShapesNativePointer for direct CQ to OCC, no step conversion needed.
         """Exports a step file as an stl file.
 
         Args:
