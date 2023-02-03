@@ -210,9 +210,7 @@ class STOK():
             self.limiter_parameters = param_tup[4]
             self.divertor_parameters = param_tup[5]
         else:
-            raise TypeError("Wrong input types, expected type ContainmentParameters,\
-                SolenoidParameters, PortParameters, LimbParameters,\
-                LimiterParameters, DivertorParameters in that order.")
+            raise TypeError("Wrong input types, expected type ContainmentParameters, SolenoidParameters, PortParameters, LimbParameters, LimiterParameters, DivertorParameters in that order.")
 
     def central_solenoid(self) -> cq.Workplane:
         """Creates the central solenoid, its parameters
@@ -704,10 +702,11 @@ class STOK():
 
         return backwall_torus
 
-    def export_stl(self, the_solid: str,
+    def export_to_stl(self, the_solid: str,
                    max_triangle_size: float,
                    filename: str) -> None:
-        # TODO: gmsh/model/occ/importShapesNativePointer for direct CQ to OCC, no step conversion needed.
+        # TODO: gmsh/model/occ/importShapesNativePointer for direct CQ to OCC,
+        # no step conversion needed mby sorta kinda doesnt work.
         """Exports a step file as an stl file.
 
         Args:
@@ -721,7 +720,7 @@ class STOK():
         gmsh.model.add("member")
 
         # Import the step file as a OCCT shape.
-        gmsh.model.occ.importShapes(the_solid)
+        gmsh.model.occ.importShapesNativePointer(the_solid)
 
         # Push the solid to the gmsh model.
         gmsh.model.occ.synchronize()
