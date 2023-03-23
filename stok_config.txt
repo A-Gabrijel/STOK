@@ -129,16 +129,16 @@
 ####################################################################
 # -- Divertor parameters
 # The thickness of the plasma facing component of the divertor
-100.0
+35.0
 
 # Divertor width
-2000.0
+400.0
 
 # Divertor gap (gap between the containment and divertor)
-50.0
+5.0
 
 # Divertor thickness
-400.0
+1000.0
 
 ####################################################################
 # -- Plasma parameters
