@@ -12,6 +12,11 @@ It's completely based on [CadQuery](https://github.com/CadQuery) and returns [Ca
 
 For exporting .stl files [CadQuery](https://github.com/CadQuery) was found to produce leaky meshes, so we opted to use [pygmsh](https://github.com/nschloe/pygmsh) which is a meshing tool that is better suited for creating meshes than CadQuery.
 
+## INSTALLATION AND DEPENDANCIES
+* [CadQuery](https://github.com/CadQuery)
+* [pygmsh](https://github.com/nschloe/)
+
+When all dependancies are installed just include stok_modules.py into your project and use its building blocks.
+
 ## STOK usage
-STOK is controlled through a set of .txt files with which we controll the boundaries of the reactor model. After the parameters in the configuration files are set, build.py can be inported and classes inside can be used.
-Each function is meant to be run in a for loop where the index paramater of the function is the index i in the loop. The functions return a CQ.shape object that can then be exported with the help of [CadQuery](https://github.com/CadQuery)
+*A detailed usage guide and a manual is coming soon!*
