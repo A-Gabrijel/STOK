@@ -707,6 +707,9 @@ class STOK():
                    filename: str) -> None:
         # TODO: gmsh/model/occ/importShapesNativePointer for direct CQ to OCC,
         # no step conversion needed mby sorta kinda doesnt work.
+        # TODO: make it so the_solid object passed can also be a cq.Workplane object
+        # by checking if it is, creating a .step intermediate file and then exporting
+        # it to .stl while either caching or deleting the intermediate .step file.
         """Exports a step file as an stl file.
 
         Args:
