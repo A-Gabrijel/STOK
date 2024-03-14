@@ -1,0 +1,21 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "stok"
+version = "1.0.0"
+description = "STOK is a package for creating simple 3D models (based on JET) of fusion reactors."
+authors = ["Anže Gabrijel <anze.gabrijel@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+cadquery = "^2.1"
+gmsh = "^4.8"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.4"
+
+[project.urls]
+Homepage = "https://github.com/A-Gabrijel/STOK"
+Issues = "https://github.com/A-Gabrijel/STOK/issues"
