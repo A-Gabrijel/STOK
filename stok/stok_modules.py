@@ -1,12 +1,14 @@
 """The STOK builder, text file search and inject functions to use when
 generating STOK."""
+import os
 from dataclasses import dataclass, field
-from os import cpu_count
 from typing import List, Tuple
 
 import cadquery as cq
 import gmsh
 from cadquery import Vector
+
+STOK_CONFIG = os.path.dirname(os.path.realpath(__file__)) + "/stok_config.txt"
 
 class FileReader:
     """
@@ -24,6 +26,7 @@ class FileReader:
         Returns:
             List[float, str]: returns a tuple of the numerical values.
         """
+
         with open(self.filename, 'r', encoding='utf8') as file:
             output: List[float] = []
             for _, line in enumerate(file):
@@ -56,10 +59,10 @@ def layers_all() -> Tuple:
         List[Layer]: returns a list of Layer objects.
     """
     output: List = []
-    nr_layers = int(FileReader('stok_config.txt').read[2])
+    nr_layers = int(FileReader(STOK_CONFIG).read[2])
     for i in range(3, nr_layers*2+3, 2):
-        output.append(Layer(FileReader("stok_config.txt").read[i],
-                            FileReader("stok_config.txt").read[i+1]))
+        output.append(Layer(FileReader(STOK_CONFIG).read[i],
+                            FileReader(STOK_CONFIG).read[i+1]))
     return tuple(output)
 
 
@@ -74,11 +77,11 @@ class ContainmentParameters:
         layers: List[Layer]
         distance_from_plasma: float
     """
-    conf_path: str = "stok_config.txt"
-    outer_radius: float = FileReader("stok_config.txt").read[0]
-    containment_height: float = FileReader("stok_config.txt").read[1]
-    nr_layers: int = int(FileReader("stok_config.txt").read[2])
-    distance_from_plasma: float = FileReader("stok_config.txt").read[-1]
+    conf_path: str = STOK_CONFIG
+    outer_radius: float = FileReader(STOK_CONFIG).read[0]
+    containment_height: float = FileReader(STOK_CONFIG).read[1]
+    nr_layers: int = int(FileReader(STOK_CONFIG).read[2])
+    distance_from_plasma: float = FileReader(STOK_CONFIG).read[-1]
     layers: Tuple = field(default=layers_all())
 
 
@@ -90,9 +93,9 @@ class SolenoidParameters:
         solenoid_radius: float
         solenoid_height: float
     """
-    solenoid_radius: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+3]
-    solenoid_height: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+4]
-    bbox_thickness: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+5]
+    solenoid_radius: float = FileReader(STOK_CONFIG).read[ContainmentParameters.nr_layers*2+3]
+    solenoid_height: float = FileReader(STOK_CONFIG).read[ContainmentParameters.nr_layers*2+4]
+    bbox_thickness: float = FileReader(STOK_CONFIG).read[ContainmentParameters.nr_layers*2+5]
 
 
 @dataclass(order=True, frozen=True)
@@ -104,9 +107,9 @@ class PortParameters:
         z_side: float
         y_side: float
     """
-    nr_ports: int = int(FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+6])
-    z_side: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+7]
-    y_side: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+8]
+    nr_ports: int = int(FileReader(STOK_CONFIG).read[ContainmentParameters.nr_layers*2+6])
+    z_side: float = FileReader(STOK_CONFIG).read[ContainmentParameters.nr_layers*2+7]
+    y_side: float = FileReader(STOK_CONFIG).read[ContainmentParameters.nr_layers*2+8]
 
 
 @dataclass(order=True, frozen=True)
@@ -132,16 +135,16 @@ class LimbParameters:
         limb_radius: float -> at what radius the limbs are placed.
         sphere_radius: float -> the radius of the spheres next to the limb.
     """
-    nr_limbs: int = int(FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+9])
+    nr_limbs: int = int(FileReader(STOK_CONFIG).read[ContainmentParameters.nr_layers*2+9])
     limb_radius: float = ContainmentParameters.outer_radius + \
-        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+10]
+        FileReader(STOK_CONFIG).read[ContainmentParameters.nr_layers*2+10]
 
-    sphere_radius: float = FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+11]
+    sphere_radius: float = FileReader(STOK_CONFIG).read[ContainmentParameters.nr_layers*2+11]
     limb_dimensions: LimbDimensiones = LimbDimensiones(
-        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+12],
-        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+13],
-        FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+14]
-        if FileReader("stok_config.txt").read[ContainmentParameters.nr_layers*2+14] != 0.0
+        FileReader(STOK_CONFIG).read[ContainmentParameters.nr_layers*2+12],
+        FileReader(STOK_CONFIG).read[ContainmentParameters.nr_layers*2+13],
+        FileReader(STOK_CONFIG).read[ContainmentParameters.nr_layers*2+14]
+        if FileReader(STOK_CONFIG).read[ContainmentParameters.nr_layers*2+14] != 0.0
         else SolenoidParameters.solenoid_height)
 
 
@@ -154,11 +157,11 @@ class LimiterParameters:
         limiter_gap: float
         limiter_thickness: float
     """
-    firstwall_thickness: float = FileReader("stok_config.txt").\
+    firstwall_thickness: float = FileReader(STOK_CONFIG).\
         read[ContainmentParameters.nr_layers*2+15]
     limiter_gap: float = FileReader(
-        "stok_config.txt").read[ContainmentParameters.nr_layers*2+16]
-    limiter_thickness: float = FileReader("stok_config.txt").\
+        STOK_CONFIG).read[ContainmentParameters.nr_layers*2+16]
+    limiter_thickness: float = FileReader(STOK_CONFIG).\
         read[ContainmentParameters.nr_layers*2+17]
 
 
@@ -172,16 +175,16 @@ class DivertorParameters:
         divertor_firstwall_thickness: float
         TODO: divertor_shape: float
     """
-    divertor_firstwall_thickness: float = FileReader("stok_config.txt").\
+    divertor_firstwall_thickness: float = FileReader(STOK_CONFIG).\
         read[ContainmentParameters.nr_layers*2+18]
     divertor_width: float = FileReader(
-        "stok_config.txt").read[ContainmentParameters.nr_layers*2+19]
+        STOK_CONFIG).read[ContainmentParameters.nr_layers*2+19]
     divertor_gap: float = FileReader(
-        "stok_config.txt").read[ContainmentParameters.nr_layers*2+20]
-    divertor_thickness: float = FileReader("stok_config.txt").\
+        STOK_CONFIG).read[ContainmentParameters.nr_layers*2+20]
+    divertor_thickness: float = FileReader(STOK_CONFIG).\
         read[ContainmentParameters.nr_layers*2+21]
     # divertor_shape: float = FileReader( TODO: add shape to divertor.
-    #     "stok_config.txt").read[ContainmentParameters.nr_layers*2+22]
+    #     STOK_CONFIG).read[ContainmentParameters.nr_layers*2+22]
 
 
 class STOK():
@@ -740,7 +743,7 @@ class STOK():
             max_triangle_size (float): the maximum size of the side of a triangle.
             filename (str): the name of the file.
         """
-        cpus = cpu_count()
+        cpus = os.cpu_count()
 
         gmsh.initialize()
         gmsh.model.add("member")
