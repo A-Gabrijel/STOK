@@ -755,7 +755,7 @@ class STOK():
         gmsh.model.occ.synchronize()
 
         if "containment" in filename:
-            gmsh.option.setNumber("Mesh.MeshSizeMin", 60)
+            gmsh.option.setNumber("Mesh.MeshSizeMin", max_triangle_size)
             #gmsh.option.setNumber("Mesh.MeshSizeMax", 1000)
             gmsh.model.mesh.field.add("MathEval", 1)
             gmsh.model.mesh.field.setString(1, "F", f"(x^2+y^2)^({exp_factor})/10")
