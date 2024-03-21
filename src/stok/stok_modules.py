@@ -749,7 +749,7 @@ class STOK():
         gmsh.model.add("member")
 
         # Import the step file as a OCCT shape.
-        gmsh.model.occ.importShapesNativePointer(the_solid)
+        gmsh.model.occ.importShapes(the_solid)
 
         # Push the solid to the gmsh model.
         gmsh.model.occ.synchronize()
