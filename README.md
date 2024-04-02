@@ -1,4 +1,4 @@
-# STOK - Simple TOKamak
+# STOK - Simple TOKamak generator
 A tool for parametric generation of simple tokamaks with rectangular cross-section.
 
 Authors: Anže Gabrijel, Aljaž Čufar
